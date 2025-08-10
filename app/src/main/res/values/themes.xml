@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <!-- Your app theme with snappy window animations -->
+    <style name="Theme.Parkingslot" parent="android:Theme.Material.Light.NoActionBar">
+        <item name="android:windowAnimationStyle">@style/SnappyAnimations</item>
+    </style>
+
+    <!-- Fast animation set for activities and dialogs -->
+    <style name="SnappyAnimations">
+        <item name="android:windowEnterAnimation">@anim/fast_fade_in</item>
+        <item name="android:windowExitAnimation">@anim/fast_fade_out</item>
+        <item name="android:windowAnimationStyle">@style/FastDialogAnimation</item>
+    </style>
+
+    <!-- Fast animation set specifically for dialogs -->
+    <style name="FastDialogAnimation">
+        <item name="android:windowEnterAnimation">@anim/fast_fade_in</item>
+        <item name="android:windowExitAnimation">@anim/fast_fade_out</item>
+    </style>
+
+</resources>
