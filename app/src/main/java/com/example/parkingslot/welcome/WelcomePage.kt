@@ -3,7 +3,6 @@ package com.example.parkingslot.welcome
 import android.content.Context
 import android.net.Uri
 import android.widget.Toast
-import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.material3.Button
@@ -41,14 +40,16 @@ import retrofit2.Response
 import java.time.LocalDate
 
 @Composable
-fun welcomePage(navController: NavController, modifier: Modifier = Modifier,bookingViewModel: BookingViewModel) {
-    BackHandler {
-        // Do nothing or show a dialog instead
-    }
+fun welcomePage(
+    navController: NavController, modifier: Modifier = Modifier,
+    bookingViewModel: BookingViewModel,
+    parkingAreaId: String
+) {
     val context = LocalContext.current
     val sharedPref = remember { context.getSharedPreferences("loginPref", Context.MODE_PRIVATE) }
     val userId = sharedPref.getInt("user_id",1)
     var showConfirmationDialog by remember { mutableStateOf(false) }
+
     PageBackground {
         ConfirmPopUp(
             showDialog = showConfirmationDialog,
@@ -78,7 +79,7 @@ fun welcomePage(navController: NavController, modifier: Modifier = Modifier,book
 
                     val api = RetrofitService.getRetrofit().create(ParkingSlotApi::class.java)
                     val today = LocalDate.now().toString()
-                    api.findCurrentParkingSlot(userId,today).enqueue(object : Callback<BookingResponse> {
+                    api.findCurrentParkingSlot(userId,pId= Integer.valueOf(parkingAreaId),date=today).enqueue(object : Callback<BookingResponse> {
 
                         override fun onResponse(call: Call<BookingResponse>, response: Response<BookingResponse>) {
                             if ( response.body()!=null) {
@@ -101,7 +102,7 @@ fun welcomePage(navController: NavController, modifier: Modifier = Modifier,book
 
                     var freeSlots: MutableList<BookingResponse> = mutableListOf()
                     val api = RetrofitService.getRetrofit().create(ParkingSlotApi::class.java)
-                    api.findFreeSlots().enqueue(object : Callback<List<BookingResponse>> {
+                    api.findFreeSlots(Integer.parseInt(parkingAreaId)).enqueue(object : Callback<List<BookingResponse>> {
                         override fun onResponse(
                             call: Call<List<BookingResponse>>,
                             response: Response<List<BookingResponse>>
@@ -125,7 +126,7 @@ fun welcomePage(navController: NavController, modifier: Modifier = Modifier,book
                 DashboardButton("My Bookings") {
                         var bookedSlots: MutableList<BookingResponse> = mutableListOf()
                         val api = RetrofitService.getRetrofit().create(ParkingSlotApi::class.java)
-                        api.findSlotsByUserId(userId).enqueue(object : Callback<List<BookingResponse>> {
+                        api.findSlotsByUserIdAndPId(userId,pId= Integer.valueOf(parkingAreaId)).enqueue(object : Callback<List<BookingResponse>> {
                             override fun onResponse(
                                 call: Call<List<BookingResponse>>,
                                 response: Response<List<BookingResponse>>

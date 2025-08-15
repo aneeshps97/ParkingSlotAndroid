@@ -31,7 +31,8 @@ fun AvailableSlot(
     year: Int = 2025,
     month: Int = 8,
     navController: NavController,
-    bookingData: List<BookingResponse> = emptyList<BookingResponse>()
+    bookingData: List<BookingResponse> = emptyList<BookingResponse>(),
+    pid:Int=0
 ) {
     var showConfirmationDialog by remember { mutableStateOf(false) }
     val context = LocalContext.current
@@ -71,9 +72,9 @@ fun AvailableSlot(
 
         Text("Available slots")
         Box(contentAlignment = Alignment.Center) {
-            BackButton({
-                navController.navigate(Routes.welcomePage)
-            })
+           /* BackButton({
+                navController.navigate(Routes.welcomePage+"/"+pid)
+            })*/
             Calender(
                 modifier=modifier,
                 year=year,

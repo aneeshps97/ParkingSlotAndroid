@@ -33,7 +33,8 @@ fun Login(navController: NavController) {
     // Navigate immediately if already logged in
     LaunchedEffect(isLoggedIn) {
         if (isLoggedIn) {
-            navController.navigate(Routes.welcomePage)
+            /*navController.navigate(Routes.welcomePage)*/
+            navController.navigate(Routes.homePage)
         }
     }
 
@@ -124,7 +125,8 @@ private fun handleLogin(
                     putString("name",response.body()?.name)
                     apply()
                 }
-                navController.navigate(Routes.welcomePage)
+                /*navController.navigate(Routes.welcomePage)*/
+                navController.navigate(Routes.homePage)
             } else {
                 Toast.makeText(context, "Login failed", Toast.LENGTH_SHORT).show()
             }
