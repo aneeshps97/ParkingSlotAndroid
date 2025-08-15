@@ -9,13 +9,20 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.example.parkingslot.parkingTicket.ParkingTicket
 import com.example.parkingslot.MyBookings.myBookings
+import com.example.parkingslot.ParkingArea.AddSlotsToParkingArea
+import com.example.parkingslot.ParkingArea.AddUsersToParkingArea
+import com.example.parkingslot.ParkingArea.AssignSlotForUsers
+import com.example.parkingslot.ParkingArea.CreateParkingArea
+import com.example.parkingslot.ParkingArea.ViewYourParkingAreas
 import com.example.parkingslot.availableSloats.AvailableSlot
+import com.example.parkingslot.home.HomePage
 import com.example.parkingslot.releaseSlot.ReleaseSlot
 import com.example.parkingslot.sharedView.BookingViewModel
 import com.example.parkingslot.transferSlot.TransferSlot
 import com.example.parkingslot.userauth.Login
 import com.example.parkingslot.userauth.SignUp
 import com.example.parkingslot.webConnect.requestresponse.BookingResponse
+import com.example.parkingslot.webConnect.requestresponse.ParkingAreaResponse
 import com.example.parkingslot.welcome.welcomePage
 import com.google.gson.Gson
 import java.net.URLDecoder
@@ -46,13 +53,63 @@ fun MyAppNavigation() {
                 )
             }
 
-            //wecome page
-            composable(Routes.welcomePage) {
-                welcomePage(
-                    navController,
-                    bookingViewModel = bookingViewModel
+            composable(Routes.homePage){
+                HomePage(
+                    navController = navController
                 )
             }
+
+            composable(Routes.createParkingArea){
+                CreateParkingArea(
+                    navController = navController
+                )
+            }
+
+            composable(Routes.addSlotsToParkingArea + "/{parkingAreaId}"){
+                val parkingAreaId = it.arguments?.getString("parkingAreaId")
+                AddSlotsToParkingArea(
+                    navController = navController,
+                    parkingAreaId = parkingAreaId?:"0"
+                )
+            }
+
+            //wecome page
+            composable(Routes.welcomePage+"/{parkingAreaId}") {
+                val parkingAreaId =it.arguments?.getString("parkingAreaId")
+                welcomePage(
+                    navController,
+                    bookingViewModel = bookingViewModel,
+                    parkingAreaId =parkingAreaId?:"0"
+                )
+            }
+
+            //showing available slots
+            composable("${Routes.viewYourParkingAreas}/{parkingAreasOfUser}") { backStackEntry->
+                val json = backStackEntry.arguments?.getString("parkingAreasOfUser")
+                val parkingAreasOfUser = Gson().fromJson(json, Array<ParkingAreaResponse>::class.java).toList()
+                ViewYourParkingAreas(
+                    navController = navController,
+                    parkingAreas = parkingAreasOfUser
+                )
+            }
+
+            composable(Routes.addUsersToParkingArea+"/{parkingAreaId}") {
+                val parkingAreaId = it.arguments?.getString("parkingAreaId")
+                AddUsersToParkingArea(
+                    navController,
+                    parkingAreaId = parkingAreaId?:"0"
+                )
+            }
+
+            composable(Routes.assignSlotForUsers+"/{parkingAreaId}") {
+                val parkingAreaId = it.arguments?.getString("parkingAreaId")
+                AssignSlotForUsers(
+                    navController,
+                    parkingAreaId = parkingAreaId?:"0"
+                )
+            }
+
+
 
             //showing the current ticket
 

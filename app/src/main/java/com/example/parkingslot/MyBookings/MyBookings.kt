@@ -85,9 +85,9 @@ fun myBookings(
         Text("My Bookings")
         Box(contentAlignment = Alignment.Center) {
             val context = LocalContext.current
-            BackButton({
+           /* BackButton({
                 navController.navigate(Routes.welcomePage)
-            })
+            })*/
 
             Calender(
                 modifier=modifier,

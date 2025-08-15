@@ -115,7 +115,7 @@ fun SignUp(navController: NavController) {
                                 apply()
                             }
 
-                            navController.navigate(Routes.welcomePage)
+                            navController.navigate(Routes.homePage)
                         } else {
                             // ❌ Login failed
                             Toast.makeText(context, "SignUP failed", Toast.LENGTH_SHORT).show()

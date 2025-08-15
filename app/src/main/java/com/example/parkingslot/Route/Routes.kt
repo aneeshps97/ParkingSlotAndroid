@@ -9,4 +9,16 @@ object Routes {
     var transferSlot = "TransferSloat"
     var login = "Login"
     var signup= "SignUp"
+
+    var homePage = "HomePage"
+
+    var createParkingArea = "CreateParkingArea"
+
+    var addSlotsToParkingArea = "AddSlotsToParkingArea"
+
+    var addUsersToParkingArea = "AddUsersToParkingArea"
+
+    var assignSlotForUsers = "AssignSlotForUsers"
+
+    var viewYourParkingAreas = "ViewYourParkingAreas"
 }
