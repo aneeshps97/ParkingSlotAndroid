@@ -26,11 +26,11 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalContext
 import androidx.navigation.NavController
 import com.example.parkingslot.Route.Routes
-import com.example.parkingslot.background.PageBackground
-import com.example.parkingslot.buttons.LogOutButton
-import com.example.parkingslot.confirm.ConfirmPopUp
+import com.example.parkingslot.mainpages.background.PageBackground
+import com.example.parkingslot.customresuables.buttons.LogOutButton
+import com.example.parkingslot.customresuables.confirm.ConfirmPopUp
 import com.example.parkingslot.sharedView.BookingViewModel
-import com.example.parkingslot.webConnect.requestresponse.BookingResponse
+import com.example.parkingslot.webConnect.dto.booking.BookingResponse
 import com.example.parkingslot.webConnect.retrofit.ParkingSlotApi
 import com.example.parkingslot.webConnect.retrofit.RetrofitService
 import com.google.gson.Gson

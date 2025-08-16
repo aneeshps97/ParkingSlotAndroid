@@ -1,17 +1,18 @@
 package com.example.parkingslot.webConnect.retrofit
 
-import com.example.parkingslot.webConnect.requestresponse.AssignSlotsToUserRequest
-import com.example.parkingslot.webConnect.requestresponse.AssignSlotsToUserResponse
-import com.example.parkingslot.webConnect.requestresponse.LoginRequest
-import com.example.parkingslot.webConnect.requestresponse.LoginResponse
-import com.example.parkingslot.webConnect.requestresponse.SignUpRequest
-import com.example.parkingslot.webConnect.requestresponse.BookingResponse
-import com.example.parkingslot.webConnect.requestresponse.ParkingAreaRequest
-import com.example.parkingslot.webConnect.requestresponse.ParkingAreaResponse
-import com.example.parkingslot.webConnect.requestresponse.ParkingAreaSlotRequest
-import com.example.parkingslot.webConnect.requestresponse.ParkingAreaSlotResponse
-import com.example.parkingslot.webConnect.requestresponse.ParkingAreaUserRequest
-import com.example.parkingslot.webConnect.requestresponse.ParkingAreaUserResponse
+import com.example.parkingslot.webConnect.dto.parkinglot.AssignSlotsToUserRequest
+import com.example.parkingslot.webConnect.dto.parkinglot.AssignSlotsToUserResponse
+import com.example.parkingslot.webConnect.dto.login.LoginRequest
+import com.example.parkingslot.webConnect.dto.login.LoginResponse
+import com.example.parkingslot.webConnect.dto.signup.SignUpRequest
+import com.example.parkingslot.webConnect.dto.booking.BookingResponse
+import com.example.parkingslot.webConnect.dto.parkinglot.ParkingAreaRequest
+import com.example.parkingslot.webConnect.dto.parkinglot.ParkingAreaResponse
+import com.example.parkingslot.webConnect.dto.parkinglot.ParkingAreaSlotRequest
+import com.example.parkingslot.webConnect.dto.parkinglot.ParkingAreaSlotResponse
+import com.example.parkingslot.webConnect.dto.parkinglot.ParkingAreaUserRequest
+import com.example.parkingslot.webConnect.dto.parkinglot.ParkingAreaUserResponse
+import com.example.parkingslot.webConnect.dto.signup.SignUpResponse
 import retrofit2.http.POST
 import retrofit2.Call
 import retrofit2.http.Body
@@ -23,7 +24,7 @@ interface ParkingSlotApi {
     fun login(@Body request: LoginRequest): Call<LoginResponse>
 
     @POST(value = "parkingslot/signUp")
-    fun signUp(@Body request: SignUpRequest): Call<LoginResponse>
+    fun signUp(@Body request: SignUpRequest): Call<SignUpResponse>
 
     @GET("parkingslot/findSlot")
     fun findCurrentParkingSlot(
