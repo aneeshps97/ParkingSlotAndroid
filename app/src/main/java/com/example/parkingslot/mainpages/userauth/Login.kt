@@ -17,6 +17,7 @@ import androidx.navigation.NavController
 import com.example.parkingslot.Route.Routes
 import com.example.parkingslot.mainpages.background.PageBackground
 import com.example.parkingslot.customresuables.buttons.ForwardButton
+import com.example.parkingslot.customresuables.textfields.LabeledTextField
 import com.example.parkingslot.webConnect.dto.login.LoginRequest
 import com.example.parkingslot.webConnect.dto.login.LoginResponse
 import com.example.parkingslot.webConnect.retrofit.ParkingSlotApi
@@ -32,7 +33,6 @@ fun Login(navController: NavController) {
     val sharedPref = remember { context.getSharedPreferences("loginPref", Context.MODE_PRIVATE) }
     val isLoggedIn = sharedPref.getBoolean("isLoggedIn", false)
 
-    // Navigate immediately if already logged in
     LaunchedEffect(isLoggedIn) {
         if (isLoggedIn) {
             navController.navigate(Routes.homePage)
@@ -56,11 +56,11 @@ fun LoginScreen(
 ) {
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
-    val isValidationSuccess = remember(password, email) {
-        mutableStateOf(
-            password.isNotEmpty() &&
-                    email.isNotEmpty()
-        )
+
+    val isValidationSuccess by remember {
+        derivedStateOf {
+            email.isNotEmpty() && password.isNotEmpty()
+        }
     }
 
     PageBackground {
@@ -72,35 +72,20 @@ fun LoginScreen(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Text("Login", style = MaterialTheme.typography.headlineMedium)
-
             Spacer(modifier = Modifier.height(16.dp))
 
-            OutlinedTextField(
-                value = email,
-                onValueChange = {
-                    email = it
-                    isValidationSuccess.value = email.isNotEmpty()
-                },
-                label = { Text("Email") },
-                modifier = Modifier.fillMaxWidth()
-            )
-
+            LabeledTextField(value = email, onValueChange = { email = it }, label = "Email")
             Spacer(modifier = Modifier.height(12.dp))
 
-            OutlinedTextField(
+            LabeledTextField(
                 value = password,
-                onValueChange = {
-                    password = it
-                    isValidationSuccess.value = password.isNotEmpty()
-                },
-                label = { Text("Password") },
-                visualTransformation = PasswordVisualTransformation(),
-                modifier = Modifier.fillMaxWidth()
+                onValueChange = { password = it },
+                label = "Password",
+                isPassword = true
             )
-
             Spacer(modifier = Modifier.height(24.dp))
 
-            ForwardButton(isEnabled = isValidationSuccess.value) {
+            ForwardButton(isEnabled = isValidationSuccess) {
                 onLoginClick(email, password)
             }
 
@@ -118,6 +103,7 @@ fun LoginScreen(
     }
 }
 
+
 private fun handleLogin(
     email: String,
     password: String,
@@ -127,6 +113,7 @@ private fun handleLogin(
 ) {
     val api = RetrofitService.getRetrofit().create(ParkingSlotApi::class.java)
     val loginRequest = LoginRequest(email = email, password = password)
+
     api.login(loginRequest).enqueue(object : Callback<LoginResponse> {
         override fun onResponse(call: Call<LoginResponse>, response: Response<LoginResponse>) {
             val responseBody = response.body()
@@ -141,10 +128,9 @@ private fun handleLogin(
                 }
                 navController.navigate(Routes.homePage)
             } else {
-                val errorBody = response.errorBody()?.string() // raw JSON as string
-                val errorMessage =
-                    errorBody?.let { JSONObject(it).getString("message") }
-                Toast.makeText(context, errorMessage, Toast.LENGTH_SHORT).show()
+                val errorBody = response.errorBody()?.string()
+                val errorMessage = errorBody?.let { JSONObject(it).getString("message") }
+                Toast.makeText(context, errorMessage ?: "Login failed", Toast.LENGTH_SHORT).show()
             }
         }
 
