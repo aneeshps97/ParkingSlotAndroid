@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AccountBox
 import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.Icon
@@ -21,12 +22,10 @@ import androidx.compose.ui.unit.dp
 @Composable
 fun LogOutButton(onClick: () -> Unit = {}) {
     Box(
-        modifier = Modifier.fillMaxSize()
     ) {
         IconButton(
             onClick = onClick,
             modifier = Modifier
-                .padding(16.dp)
                 .align(Alignment.TopEnd)
                 .background(
                     color = Color.White, // Or any color you prefer
@@ -35,7 +34,7 @@ fun LogOutButton(onClick: () -> Unit = {}) {
                 .size(48.dp) // Size to give space for circle
         ) {
             Icon(
-                imageVector = Icons.Default.AccountCircle,
+                imageVector = Icons.Default.AccountBox,
                 contentDescription = "Back",
                 tint = Color.Black // Icon color
             )

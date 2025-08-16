@@ -9,17 +9,19 @@ import androidx.compose.runtime.Composable
 fun ConfirmPopUp(
     showDialog: Boolean,
     onDismiss: () -> Unit,
-    onConfirm: () -> Unit
+    onConfirm: () -> Unit,
+    text1:String="Confirm Action",
+    text2:String="Are you sure you want to proceed?"
 ){
 
     if (showDialog) {
         AlertDialog(
             onDismissRequest = onDismiss,
             title = {
-                Text(text = "Confirm Action")
+                Text(text = text1)
             },
             text = {
-                Text("Are you sure you want to proceed?")
+                Text(text2)
             },
             confirmButton = {
                 TextButton(onClick = onConfirm) {

@@ -4,14 +4,28 @@ import android.content.Context
 import android.net.Uri
 import android.widget.Toast
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.ExitToApp
+import androidx.compose.material.icons.filled.Home
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Divider
+import androidx.compose.material3.Icon
+import androidx.compose.material3.SegmentedButtonDefaults.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -22,6 +36,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -48,9 +64,9 @@ fun HomePage(navController: NavController, modifier: Modifier = Modifier) {
 
     var parkingAreas: List<ParkingAreaResponse> = ArrayList<ParkingAreaResponse>()
 
-    //load data to display the parking slots available for the user
-
     ConfirmPopUp(
+        text1 = "Hi $name",
+        text2 = "Are you sure you want to logout?",
         showDialog = showConfirmationDialog,
         onDismiss = { showConfirmationDialog = false },
         onConfirm = {
@@ -61,98 +77,133 @@ fun HomePage(navController: NavController, modifier: Modifier = Modifier) {
             }
             navController.navigate(Routes.login)
             // Handle confirm logic here
-        }
-    )
+        })
+
 
     PageBackground {
-        Text("UserId:" + userId)
-        Text("UserName:" + name)
-        Box(contentAlignment = Alignment.Center) {
-            Column {
-                LogOutButton({
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(16.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            // Logout button at top-right
+            Row(
+                modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End
+            ) {
+                LogOutButton {
                     showConfirmationDialog = true
-                })
-
+                }
             }
 
+            Spacer(modifier = Modifier.height(16.dp))
 
+            // Welcome text
+            Text(
+                text = "WELCOME", style = TextStyle(
+                    fontSize = 40.sp, fontFamily = FontFamily.Monospace
+                )
+            )
 
-            Column {
+            Divider(
+                modifier = Modifier
+                    .fillMaxWidth(0.6f)
+                    .height(1.dp), color = Color.Black
+            )
 
-                HomePageButton("CreateParkingArea") {
+            Spacer(modifier = Modifier.height(32.dp))
+
+            // Buttons and divider
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(24.dp),
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                HomePageButton(
+                    icon = {
+                        Icon(
+                            Icons.Default.Add,
+                            contentDescription = "Add",
+                            modifier = Modifier.size(120.dp)
+                        )
+                    }, label = "ADD"
+                ) {
                     navController.navigate(Routes.createParkingArea)
                 }
 
+                Divider(
+                    modifier = Modifier
+                        .fillMaxWidth(0.6f)
+                        .height(1.dp), color = Color.Black
+                )
 
-
-
-                HomePageButton("View your parkingSlots") {
-
+                HomePageButton(
+                    icon = {
+                        Icon(
+                            Icons.Default.ExitToApp,
+                            contentDescription = "View",
+                            modifier = Modifier.size(120.dp)
+                        )
+                    }, label = "VIEW"
+                ) {
                     val api = RetrofitService.getRetrofit().create(ParkingSlotApi::class.java)
-                    // Create the call object first
                     val call: Call<List<ParkingAreaResponse>> = api.findParkingAreaByUser(userId)
-
-// Now you can get the URL
-                    //Toast.makeText(context, call.request().url().toString(), Toast.LENGTH_LONG).show()
-
-
                     call.enqueue(object : Callback<List<ParkingAreaResponse>> {
                         override fun onResponse(
                             call: Call<List<ParkingAreaResponse>>,
                             response: Response<List<ParkingAreaResponse>>
                         ) {
-                            // Toast.makeText(context, "success "+response.body(), Toast.LENGTH_SHORT).show()
                             if (response.body() != null) {
-                                //Toast.makeText(context, response.body().toString(), Toast.LENGTH_SHORT).show()
                                 parkingAreas = response.body()!!
-
                                 val parkingAreasOfUser = Uri.encode(Gson().toJson(parkingAreas))
                                 navController.navigate(Routes.viewYourParkingAreas + "/" + parkingAreasOfUser)
-
                             } else {
                                 Toast.makeText(
-                                    context,
-                                    "No parking area assigned",
-                                    Toast.LENGTH_SHORT
+                                    context, "No parking area assigned", Toast.LENGTH_SHORT
                                 ).show()
                             }
                         }
 
                         override fun onFailure(
-                            call: Call<List<ParkingAreaResponse>>,
-                            t: Throwable
+                            call: Call<List<ParkingAreaResponse>>, t: Throwable
                         ) {
                             Toast.makeText(context, "Error: ${t.message}", Toast.LENGTH_SHORT)
                                 .show()
                         }
                     })
-
-
                 }
-
-
             }
-
-
         }
     }
 }
 
+
 @Composable
-fun HomePageButton(text: String, onClick: () -> Unit = {}) {
+fun HomePageButton(
+    icon: @Composable () -> Unit, label: String, onClick: () -> Unit = {}
+) {
     Button(
-        onClick = onClick,
-        modifier = Modifier
-            .fillMaxWidth(0.8f)
-            .height(60.dp)
-            .padding(2.dp),
-        shape = RoundedCornerShape(16.dp),
-        colors = ButtonDefaults.buttonColors(
-            containerColor = Color.White, contentColor = Color.Black
-        ),
-        border = BorderStroke(2.dp, Color.Black),
-        elevation = null
+        onClick = onClick, modifier = Modifier
+            .size(220.dp) // You can increase this if needed
+            .padding(4.dp), shape = RoundedCornerShape(16.dp), colors = ButtonDefaults.buttonColors(
+            containerColor = Color.Transparent, contentColor = Color.Black
+        ), elevation = null, border = null
     ) {
-        Text(text = text, fontSize = 18.sp, fontWeight = FontWeight.SemiBold)
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center,
+            modifier = Modifier.fillMaxSize()
+        ) {
+            icon()
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            Text(
+                text = label, fontSize = 16.sp, fontWeight = FontWeight.Medium
+            )
+        }
     }
 }
+
+
+
