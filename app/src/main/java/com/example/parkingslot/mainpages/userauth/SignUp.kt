@@ -128,7 +128,7 @@ fun handleSignUp(
                 with(sharedPref.edit()) {
                     putBoolean("isLoggedIn", true)
                     putString("user_token", data.userToken)
-                    putInt("user_id", data.id ?: 0)
+                    putInt("user_id", data.userId ?: 0)
                     putString("name", data.name)
                     apply()
                 }

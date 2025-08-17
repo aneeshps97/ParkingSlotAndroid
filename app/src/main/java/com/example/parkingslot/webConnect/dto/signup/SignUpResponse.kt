@@ -7,7 +7,7 @@ data class SignUpResponse(
     val data: UserData
 )
 data class UserData(
-    val id: Int,
+    val userId: Int,
     val name: String,
     val email: String,
     val password: String,
