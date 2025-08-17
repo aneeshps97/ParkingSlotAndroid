@@ -1,7 +1,7 @@
 package com.example.parkingslot.mainpages.ParkingArea
 
-import com.example.parkingslot.webConnect.dto.parkinglot.ParkingAreaUserRequest
-import com.example.parkingslot.webConnect.dto.parkinglot.ParkingAreaUserResponse
+import com.example.parkingslot.webConnect.dto.parkingArea.ParkingAreaUserRequest
+import com.example.parkingslot.webConnect.dto.parkingArea.ParkingAreaUserResponse
 import android.content.Context
 import android.widget.Toast
 import androidx.compose.foundation.BorderStroke
@@ -126,10 +126,11 @@ fun AddUsersToParkingArea(
 
 
             Spacer(modifier = Modifier.height(12.dp))
-
-            ForwardButton {
-                navController.navigate(Routes.assignSlotForUsers+"/"+parkingAreaId)
-            }
+            ForwardButton(
+                isEnabled = true,
+                onClick = {navController.navigate(Routes.assignSlotForUsers+"/"+parkingAreaId) },
+                //alignment = Alignment.CenterEnd // or Alignment.CenterStart, Alignment.TopEnd, etc.
+            )
 
             Spacer(modifier = Modifier.height(90.dp))
 

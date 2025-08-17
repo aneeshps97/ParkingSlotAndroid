@@ -37,8 +37,8 @@ import retrofit2.Response
 import androidx.compose.material3.Icon
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
-import com.example.parkingslot.webConnect.dto.parkinglot.AssignSlotsToUserRequest
-import com.example.parkingslot.webConnect.dto.parkinglot.AssignSlotsToUserResponse
+import com.example.parkingslot.webConnect.dto.parkingArea.AssignSlotsToUserRequest
+import com.example.parkingslot.webConnect.dto.parkingArea.AssignSlotsToUserResponse
 
 @Composable
 fun AssignSlotForUsers(
@@ -139,7 +139,7 @@ fun AssignSlotForUsers(
 
             Spacer(modifier = Modifier.height(12.dp))
 
-            ForwardButton {}
+            //ForwardButton {}
 
             Spacer(modifier = Modifier.height(90.dp))
 

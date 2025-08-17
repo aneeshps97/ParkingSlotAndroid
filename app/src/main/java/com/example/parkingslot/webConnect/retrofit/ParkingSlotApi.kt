@@ -1,22 +1,23 @@
 package com.example.parkingslot.webConnect.retrofit
 
-import com.example.parkingslot.webConnect.dto.parkinglot.AssignSlotsToUserRequest
-import com.example.parkingslot.webConnect.dto.parkinglot.AssignSlotsToUserResponse
+import com.example.parkingslot.webConnect.dto.parkingArea.AssignSlotsToUserRequest
+import com.example.parkingslot.webConnect.dto.parkingArea.AssignSlotsToUserResponse
 import com.example.parkingslot.webConnect.dto.login.LoginRequest
 import com.example.parkingslot.webConnect.dto.login.LoginResponse
 import com.example.parkingslot.webConnect.dto.signup.SignUpRequest
 import com.example.parkingslot.webConnect.dto.booking.BookingResponse
-import com.example.parkingslot.webConnect.dto.parkinglot.ParkingAreaRequest
-import com.example.parkingslot.webConnect.dto.parkinglot.ParkingAreaResponse
-import com.example.parkingslot.webConnect.dto.parkinglot.ParkingAreaSlotRequest
-import com.example.parkingslot.webConnect.dto.parkinglot.ParkingAreaSlotResponse
-import com.example.parkingslot.webConnect.dto.parkinglot.ParkingAreaUserRequest
-import com.example.parkingslot.webConnect.dto.parkinglot.ParkingAreaUserResponse
+import com.example.parkingslot.webConnect.dto.parkingArea.ParkingAreaRequest
+import com.example.parkingslot.webConnect.dto.parkingArea.ParkingAreaResponse
+import com.example.parkingslot.webConnect.dto.parkingArea.ParkingAreaUserRequest
+import com.example.parkingslot.webConnect.dto.parkingArea.ParkingAreaUserResponse
+import com.example.parkingslot.webConnect.dto.parkingArea.Slot
 import com.example.parkingslot.webConnect.dto.signup.SignUpResponse
 import retrofit2.http.POST
 import retrofit2.Call
 import retrofit2.http.Body
 import retrofit2.http.GET
+import retrofit2.http.PUT
+import retrofit2.http.Path
 import retrofit2.http.Query
 
 interface ParkingSlotApi {
@@ -55,11 +56,13 @@ interface ParkingSlotApi {
         @Query("userId") userId: Int?
     ): Call <BookingResponse>
 
-    @POST(value = "parkingslot/createParkingArea")
+    @POST(value = "parkingslot/parkingArea/createParkingArea")
     fun createParkingArea(@Body request: ParkingAreaRequest): Call<ParkingAreaResponse>
 
-    @POST(value = "parkingslot/addSlotsToParkingArea")
-    fun addSlotsToParkingArea(@Body request: ParkingAreaSlotRequest):Call<ParkingAreaSlotResponse>
+    @PUT("parkingslot/parkingArea/{id}/addSlots")
+    fun addSlotsToParkingArea(
+        @Path("id") id: Int, @Body slots: List<Slot>
+    ): Call<ParkingAreaResponse>
 
     @POST(value = "parkingslot/addUserToParkingArea")
     fun addUsersToParkingArea(@Body request: ParkingAreaUserRequest):Call<ParkingAreaUserResponse>

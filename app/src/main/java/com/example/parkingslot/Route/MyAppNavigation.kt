@@ -22,7 +22,7 @@ import com.example.parkingslot.mainpages.transferSlot.TransferSlot
 import com.example.parkingslot.mainpages.userauth.Login
 import com.example.parkingslot.mainpages.userauth.SignUp
 import com.example.parkingslot.webConnect.dto.booking.BookingResponse
-import com.example.parkingslot.webConnect.dto.parkinglot.ParkingAreaResponse
+import com.example.parkingslot.webConnect.dto.parkingArea.ParkingAreaResponse
 import com.example.parkingslot.welcome.welcomePage
 import com.google.gson.Gson
 import java.net.URLDecoder
@@ -65,11 +65,13 @@ fun MyAppNavigation() {
                 )
             }
 
-            composable(Routes.addSlotsToParkingArea + "/{parkingAreaId}"){
+            composable(Routes.addSlotsToParkingArea + "/{parkingAreaId}/{parkingAreaName}"){
                 val parkingAreaId = it.arguments?.getString("parkingAreaId")
+                val parkingAreaName = it.arguments?.getString("parkingAreaName")
                 AddSlotsToParkingArea(
                     navController = navController,
-                    parkingAreaId = parkingAreaId?:"0"
+                    parkingAreaId = parkingAreaId?:"0",
+                    parkingAreaName = parkingAreaName?:""
                 )
             }
 

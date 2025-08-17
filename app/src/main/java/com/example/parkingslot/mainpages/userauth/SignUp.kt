@@ -94,10 +94,7 @@ fun SignUp(navController: NavController) {
             )
             Spacer(modifier = Modifier.height(24.dp))
 
-            ForwardButton(isEnabled = isValidationSuccess) {
-                handleSignUp(context, sharedPref, navController, name, email, password)
-            }
-
+            ForwardButton(isEnabled = isValidationSuccess,onClick={ handleSignUp(context, sharedPref, navController, name, email, password)})
             Spacer(modifier = Modifier.height(90.dp))
 
             Text(

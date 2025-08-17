@@ -85,10 +85,7 @@ fun LoginScreen(
             )
             Spacer(modifier = Modifier.height(24.dp))
 
-            ForwardButton(isEnabled = isValidationSuccess) {
-                onLoginClick(email, password)
-            }
-
+            ForwardButton(isEnabled = isValidationSuccess, onClick = {onLoginClick(email, password)})
             Spacer(modifier = Modifier.height(90.dp))
 
             Text(

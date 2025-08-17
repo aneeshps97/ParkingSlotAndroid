@@ -28,7 +28,7 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.example.parkingslot.Route.Routes
 import com.example.parkingslot.mainpages.background.PageBackground
-import com.example.parkingslot.webConnect.dto.parkinglot.ParkingAreaResponse
+import com.example.parkingslot.webConnect.dto.parkingArea.ParkingAreaResponse
 
 @Composable
 fun ViewYourParkingAreas(
@@ -57,7 +57,7 @@ fun ViewYourParkingAreas(
             Text("Your parkingAreas", style = MaterialTheme.typography.headlineMedium)
 
             parkingAreas.forEach { area ->
-                ParkingSlots(area.name,{navController.navigate(Routes.welcomePage+"/"+area.p_id)})
+                //ParkingSlots(area.name,{navController.navigate(Routes.welcomePage+"/"+area.p_id)})
             }
 
         }
