@@ -61,9 +61,9 @@ fun myBookings(
             onConfirm = {
 
 
-                val matchedId = bookingData.find { it.userId == userId && it.date == dateSelected }?.id
+                val matchedId = bookingData.find { it.data.user.data.userId == userId && it.data.date.toString() == dateSelected }?.data?.bookingId
                 val api = RetrofitService.getRetrofit().create(ParkingSlotApi::class.java)
-                api.releaseSlot(slotId = matchedId).enqueue(object : Callback<BookingResponse> {
+                api.releaseSlot(slotId = matchedId as Int?).enqueue(object : Callback<BookingResponse> {
                     override fun onResponse(call: Call<BookingResponse>, response: Response<BookingResponse>) {
                         if ( response.body()!=null) {
                             Toast.makeText(context, "slot released", Toast.LENGTH_SHORT).show()

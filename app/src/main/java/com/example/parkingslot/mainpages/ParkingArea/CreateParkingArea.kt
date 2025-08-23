@@ -98,7 +98,8 @@ fun createNewParking(context: Context, name: String, userId: Int, navController:
             if (response.body() != null && response.body()?.status == 0) {
                 val parkingAreaId = response.body()?.data?.parkingAreaId
                 val parkingAreaName = response.body()?.data?.name
-                navController.navigate(Routes.addSlotsToParkingArea + "/$parkingAreaId/$parkingAreaName")
+                val adminId = response.body()?.data?.adminId
+                navController.navigate(Routes.addSlotsToParkingArea + "/$parkingAreaId/$parkingAreaName/$adminId")
             } else {
                 Toast.makeText(
                     context, "Failed to create " + response.body()?.message, Toast.LENGTH_SHORT

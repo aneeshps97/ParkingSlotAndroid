@@ -37,10 +37,11 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.example.parkingslot.Route.Routes
-import com.example.parkingslot.mainpages.background.PageBackground
 import com.example.parkingslot.customresuables.buttons.LogOutButton
 import com.example.parkingslot.customresuables.confirm.ConfirmPopUp
+import com.example.parkingslot.mainpages.background.PageBackground
 import com.example.parkingslot.webConnect.dto.parkingArea.ParkingAreaResponse
+import com.example.parkingslot.webConnect.dto.user.UserResponse
 import com.example.parkingslot.webConnect.retrofit.ParkingSlotApi
 import com.example.parkingslot.webConnect.retrofit.RetrofitService
 import com.google.gson.Gson
@@ -141,16 +142,17 @@ fun HomePage(navController: NavController, modifier: Modifier = Modifier) {
                     }, label = "VIEW"
                 ) {
                     val api = RetrofitService.getRetrofit().create(ParkingSlotApi::class.java)
-                    val call: Call<List<ParkingAreaResponse>> = api.findParkingAreaByUser(userId)
-                    call.enqueue(object : Callback<List<ParkingAreaResponse>> {
+                    val call: Call<UserResponse> = api.findUserDetailsById(userId)
+                    call.enqueue(object : Callback<UserResponse> {
                         override fun onResponse(
-                            call: Call<List<ParkingAreaResponse>>,
-                            response: Response<List<ParkingAreaResponse>>
+                            call: Call<UserResponse>,
+                            response: Response<UserResponse>
                         ) {
-                            if (response.body() != null) {
-                                parkingAreas = response.body()!!
-                                val parkingAreasOfUser = Uri.encode(Gson().toJson(parkingAreas))
-                                navController.navigate(Routes.viewYourParkingAreas + "/" + parkingAreasOfUser)
+                            if (response.body() != null && response.body()?.status == 0) {
+                                val parkingAreas = response.body()?.data?.parkingAreas
+                                navController.currentBackStackEntry?.savedStateHandle?.set("parkingAreasOfUser", parkingAreas)
+                                navController.navigate(Routes.viewYourParkingAreas)
+
                             } else {
                                 Toast.makeText(
                                     context, "No parking area assigned", Toast.LENGTH_SHORT
@@ -159,7 +161,7 @@ fun HomePage(navController: NavController, modifier: Modifier = Modifier) {
                         }
 
                         override fun onFailure(
-                            call: Call<List<ParkingAreaResponse>>, t: Throwable
+                            call: Call<UserResponse>, t: Throwable
                         ) {
                             Toast.makeText(context, "Error: ${t.message}", Toast.LENGTH_SHORT)
                                 .show()

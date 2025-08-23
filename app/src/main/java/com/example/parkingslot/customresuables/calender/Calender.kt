@@ -128,7 +128,7 @@ fun Calender(modifier: Modifier = Modifier, bookingData: List<BookingResponse> =
 fun isDateMatching(slots: List<BookingResponse>, inputDate: String): Boolean {
     for (slot in slots) {
         val inputDateNormalized = normalizeDate(inputDate)
-        val matches = slot.date == inputDateNormalized
+        val matches = slot.data.date.toString() == inputDateNormalized
         if (matches) {
             return true
         }

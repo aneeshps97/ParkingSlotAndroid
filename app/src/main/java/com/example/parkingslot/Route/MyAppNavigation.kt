@@ -7,23 +7,23 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
-import com.example.parkingslot.mainpages.parkingTicket.ParkingTicket
 import com.example.parkingslot.mainpages.MyBookings.myBookings
 import com.example.parkingslot.mainpages.ParkingArea.AddSlotsToParkingArea
 import com.example.parkingslot.mainpages.ParkingArea.AddUsersToParkingArea
 import com.example.parkingslot.mainpages.ParkingArea.AssignSlotForUsers
 import com.example.parkingslot.mainpages.ParkingArea.CreateParkingArea
 import com.example.parkingslot.mainpages.ParkingArea.ViewYourParkingAreas
+import com.example.parkingslot.mainpages.ParkingArea.parkingArea
 import com.example.parkingslot.mainpages.availableslot.AvailableSlot
 import com.example.parkingslot.mainpages.home.HomePage
+import com.example.parkingslot.mainpages.parkingTicket.ParkingTicket
 import com.example.parkingslot.mainpages.releaseSlot.ReleaseSlot
-import com.example.parkingslot.sharedView.BookingViewModel
 import com.example.parkingslot.mainpages.transferSlot.TransferSlot
 import com.example.parkingslot.mainpages.userauth.Login
 import com.example.parkingslot.mainpages.userauth.SignUp
+import com.example.parkingslot.sharedView.BookingViewModel
 import com.example.parkingslot.webConnect.dto.booking.BookingResponse
-import com.example.parkingslot.webConnect.dto.parkingArea.ParkingAreaResponse
-import com.example.parkingslot.welcome.welcomePage
+import com.example.parkingslot.webConnect.dto.parkingArea.ParkingAreaData
 import com.google.gson.Gson
 import java.net.URLDecoder
 import java.util.Calendar
@@ -65,52 +65,62 @@ fun MyAppNavigation() {
                 )
             }
 
-            composable(Routes.addSlotsToParkingArea + "/{parkingAreaId}/{parkingAreaName}"){
+            composable(Routes.addSlotsToParkingArea + "/{parkingAreaId}/{parkingAreaName}/{adminId}"){
                 val parkingAreaId = it.arguments?.getString("parkingAreaId")
                 val parkingAreaName = it.arguments?.getString("parkingAreaName")
+                val adminId = it.arguments?.getString("adminId")
                 AddSlotsToParkingArea(
                     navController = navController,
                     parkingAreaId = parkingAreaId?:"0",
-                    parkingAreaName = parkingAreaName?:""
+                    parkingAreaName = parkingAreaName?:"",
+                    adminId = adminId?:"0"
                 )
             }
-
-            //wecome page
-            composable(Routes.welcomePage+"/{parkingAreaId}") {
+            //parking area page
+            composable(Routes.parkingArea+"/{parkingAreaId}") {
                 val parkingAreaId =it.arguments?.getString("parkingAreaId")
-                welcomePage(
+                parkingArea(
                     navController,
                     bookingViewModel = bookingViewModel,
                     parkingAreaId =parkingAreaId?:"0"
                 )
             }
 
-            //showing available slots
-            composable("${Routes.viewYourParkingAreas}/{parkingAreasOfUser}") { backStackEntry->
-                val json = backStackEntry.arguments?.getString("parkingAreasOfUser")
-                val parkingAreasOfUser = Gson().fromJson(json, Array<ParkingAreaResponse>::class.java).toList()
+            //showing parking areas
+            composable(Routes.viewYourParkingAreas) {
+                val parkingAreasOfUser = navController.previousBackStackEntry
+                    ?.savedStateHandle
+                    ?.get<List<com.example.parkingslot.webConnect.dto.user.ParkingAreaData>>("parkingAreasOfUser") ?: emptyList()
                 ViewYourParkingAreas(
                     navController = navController,
                     parkingAreas = parkingAreasOfUser
                 )
             }
 
-            composable(Routes.addUsersToParkingArea+"/{parkingAreaId}") {
+
+
+
+            composable(Routes.addUsersToParkingArea+"/{parkingAreaId}/{parkingAreaName}/{adminId}") {
                 val parkingAreaId = it.arguments?.getString("parkingAreaId")
+                val parkingAreaName = it.arguments?.getString("parkingAreaName")
+                val adminId = it.arguments?.getString("adminId")
                 AddUsersToParkingArea(
                     navController,
-                    parkingAreaId = parkingAreaId?:"0"
+                    parkingAreaId = parkingAreaId?:"0",
+                    parkingAreaName = parkingAreaName?:"",
+                    adminId = adminId?:"0"
                 )
             }
 
-            composable(Routes.assignSlotForUsers+"/{parkingAreaId}") {
-                val parkingAreaId = it.arguments?.getString("parkingAreaId")
+
+            composable("${Routes.assignSlotForUsers}/{parkingAreaData}") { backStackEntry->
+                val json = backStackEntry.arguments?.getString("parkingAreaData")
+                val parkingAreaData = Gson().fromJson(json, ParkingAreaData::class.java)
                 AssignSlotForUsers(
-                    navController,
-                    parkingAreaId = parkingAreaId?:"0"
+                    navController = navController,
+                    parkingAreaData = parkingAreaData
                 )
             }
-
 
 
             //showing the current ticket

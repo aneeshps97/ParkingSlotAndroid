@@ -46,12 +46,12 @@ fun AvailableSlot(
             onConfirm = {
 
 
-                val matchedId = bookingData.find {it.date == dateSelected }?.id
+                val matchedId = bookingData.find {it.data.date.toString() == dateSelected }?.data?.bookingId
                 Toast.makeText(context, "bookingData ::"+bookingData, Toast.LENGTH_SHORT).show()
                 Toast.makeText(context, "dateSelected ::"+dateSelected, Toast.LENGTH_SHORT).show()
                 Toast.makeText(context, "matched slot id ::"+matchedId, Toast.LENGTH_SHORT).show()
                  val api = RetrofitService.getRetrofit().create(ParkingSlotApi::class.java)
-                 api.bookFreeSlot(slotId = matchedId,userId=userId).enqueue(object : Callback<BookingResponse> {
+                 api.bookFreeSlot(slotId = matchedId as Int?,userId=userId).enqueue(object : Callback<BookingResponse> {
                      override fun onResponse(call: Call<BookingResponse>, response: Response<BookingResponse>) {
                          if ( response.body()!=null) {
                              Toast.makeText(context, "slot booked", Toast.LENGTH_SHORT).show()

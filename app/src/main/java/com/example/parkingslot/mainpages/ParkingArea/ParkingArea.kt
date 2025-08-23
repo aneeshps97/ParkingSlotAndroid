@@ -1,4 +1,4 @@
-package com.example.parkingslot.welcome
+package com.example.parkingslot.mainpages.ParkingArea
 
 import android.content.Context
 import android.net.Uri
@@ -40,7 +40,7 @@ import retrofit2.Response
 import java.time.LocalDate
 
 @Composable
-fun welcomePage(
+fun parkingArea(
     navController: NavController, modifier: Modifier = Modifier,
     bookingViewModel: BookingViewModel,
     parkingAreaId: String
@@ -83,7 +83,7 @@ fun welcomePage(
 
                         override fun onResponse(call: Call<BookingResponse>, response: Response<BookingResponse>) {
                             if ( response.body()!=null) {
-                                val slotNumber = response.body()?.slotNo
+                                val slotNumber = response.body()?.data?.slot?.name
                                 navController.navigate(Routes.parkingTicket + "/"+slotNumber)
                             } else {
                                 //Toast.makeText(context, "Login failed", Toast.LENGTH_SHORT).show()

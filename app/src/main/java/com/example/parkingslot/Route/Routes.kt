@@ -1,7 +1,7 @@
 package com.example.parkingslot.Route
 
 object Routes {
-    var welcomePage = "WelcomePage"
+    var parkingArea = "ParkingArea"
     var availableSlots = "availableSlots"
     var parkingTicket = "ParkingTicket"
     var myBookings = "myBookings"
