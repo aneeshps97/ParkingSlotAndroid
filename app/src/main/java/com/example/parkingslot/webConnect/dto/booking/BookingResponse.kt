@@ -8,10 +8,10 @@ data class BookingResponse(
     val statusCode: Int,
     val status: Int,
     val message: String,
-    val data: bookingData
+    val data: List<BookingData>
 )
 
-data class bookingData(
+data class BookingData(
     val bookingId: Int,
     val user : UserResponse,
     val parkingArea: ParkingAreaResponse,

@@ -3,7 +3,6 @@ package com.example.parkingslot.mainpages.availableslot
 import android.content.Context
 import android.widget.Toast
 import androidx.compose.foundation.layout.Box
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -17,6 +16,7 @@ import com.example.parkingslot.Route.Routes
 import com.example.parkingslot.mainpages.background.PageBackground
 import com.example.parkingslot.customresuables.calender.Calender
 import com.example.parkingslot.customresuables.confirm.ConfirmPopUp
+import com.example.parkingslot.webConnect.dto.booking.BookingData
 import com.example.parkingslot.webConnect.dto.booking.BookingResponse
 import com.example.parkingslot.webConnect.retrofit.ParkingSlotApi
 import com.example.parkingslot.webConnect.retrofit.RetrofitService
@@ -30,8 +30,8 @@ fun AvailableSlot(
     year: Int = 2025,
     month: Int = 8,
     navController: NavController,
-    bookingData: List<BookingResponse> = emptyList<BookingResponse>(),
-    pid:Int=0
+    bookingData: List<BookingData> = emptyList<BookingData>(),
+    parkingAreaId:String?
 ) {
     var showConfirmationDialog by remember { mutableStateOf(false) }
     val context = LocalContext.current
@@ -44,39 +44,34 @@ fun AvailableSlot(
             showDialog = showConfirmationDialog,
             onDismiss = { showConfirmationDialog = false },
             onConfirm = {
-
-
-                val matchedId = bookingData.find {it.data.date.toString() == dateSelected }?.data?.bookingId
-                Toast.makeText(context, "bookingData ::"+bookingData, Toast.LENGTH_SHORT).show()
-                Toast.makeText(context, "dateSelected ::"+dateSelected, Toast.LENGTH_SHORT).show()
-                Toast.makeText(context, "matched slot id ::"+matchedId, Toast.LENGTH_SHORT).show()
+                val matchedId = bookingData.find {it.date == dateSelected }?.bookingId
                  val api = RetrofitService.getRetrofit().create(ParkingSlotApi::class.java)
-                 api.bookFreeSlot(slotId = matchedId as Int?,userId=userId).enqueue(object : Callback<BookingResponse> {
-                     override fun onResponse(call: Call<BookingResponse>, response: Response<BookingResponse>) {
-                         if ( response.body()!=null) {
-                             Toast.makeText(context, "slot booked", Toast.LENGTH_SHORT).show()
-                         } else {
-                             //Toast.makeText(context, "Login failed", Toast.LENGTH_SHORT).show()
-                         }
-                     }
+                api.bookSlotForUser(userId=userId,bookingId = matchedId as Int?).enqueue(object : Callback<BookingResponse> {
+                    override fun onResponse(call: Call<BookingResponse>, response: Response<BookingResponse>) {
+                        if ( response.body()!=null) {
+                            if(response.body()?.status==0){
+                                Toast.makeText(context, "Slot Booked", Toast.LENGTH_SHORT).show()
+                            }else{
+                                Toast.makeText(context, "Failed", Toast.LENGTH_SHORT).show()
+                            }
+                        } else {
+                            Toast.makeText(context, "Failed", Toast.LENGTH_SHORT).show()
+                        }
+                    }
 
-                     override fun onFailure(call: Call<BookingResponse>, t: Throwable) {
-                         //Toast.makeText(context, "Error: ${t.message}", Toast.LENGTH_SHORT).show()
-                     }
-                 })
+                    override fun onFailure(call: Call<BookingResponse>, t: Throwable) {
+                        //Toast.makeText(context, "Error: ${t.message}", Toast.LENGTH_SHORT).show()
+                    }
+                 }
 
+                 )
                 showConfirmationDialog = false
             }
         )
-
-        Text("Available slots")
         Box(contentAlignment = Alignment.Center) {
-           /* BackButton({
-                navController.navigate(Routes.welcomePage+"/"+pid)
-            })*/
             Calender(
-                modifier=modifier,
-                year=year,
+                modifier =modifier,
+                year =year,
                 month = month,
                 navController = navController,
                 onClick = { selectedDate ->
@@ -84,7 +79,8 @@ fun AvailableSlot(
                     showConfirmationDialog = true
                 },
                 calenderRef = Routes.availableSlots,
-                bookingData = bookingData
+                bookingData = bookingData,
+                parkingAreaId = parkingAreaId.toString()
             )
         }
     }

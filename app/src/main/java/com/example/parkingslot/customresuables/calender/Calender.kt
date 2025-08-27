@@ -20,6 +20,8 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import com.example.parkingslot.mainpages.ParkingArea.parkingArea
+import com.example.parkingslot.webConnect.dto.booking.BookingData
 import com.example.parkingslot.webConnect.dto.booking.BookingResponse
 import com.google.gson.Gson
 import java.net.URLEncoder
@@ -31,7 +33,7 @@ import java.time.format.TextStyle
 import java.util.Locale
 
 @Composable
-fun Calender(modifier: Modifier = Modifier, bookingData: List<BookingResponse> = emptyList<BookingResponse>(), year: Int, month: Int, navController: NavController, onClick: (String) -> Unit, calenderRef: String) {
+fun Calender(modifier: Modifier = Modifier, bookingData: List<BookingData> = emptyList<BookingData>(), year: Int, month: Int, navController: NavController, onClick: (String) -> Unit, calenderRef: String,parkingAreaId: String) {
     Column(
         verticalArrangement = Arrangement.spacedBy(12.dp),
         horizontalAlignment = Alignment.CenterHorizontally
@@ -59,7 +61,7 @@ fun Calender(modifier: Modifier = Modifier, bookingData: List<BookingResponse> =
                         } else {
                             currentMonth -= 1
                         }
-                        navController.navigate("${calenderRef}/$currentYear/$currentMonth/$encodedJson")
+                        navController.navigate("${calenderRef}/$currentYear/$currentMonth/$encodedJson/${parkingAreaId}")
                     },
                     onNext = {
                         if (currentMonth == 12) {
@@ -68,7 +70,7 @@ fun Calender(modifier: Modifier = Modifier, bookingData: List<BookingResponse> =
                         } else {
                             currentMonth += 1
                         }
-                        navController.navigate("${calenderRef}/$currentYear/$currentMonth/$encodedJson")
+                        navController.navigate("${calenderRef}/$currentYear/$currentMonth/$encodedJson/${parkingAreaId}")
                     }
                 )
 
@@ -99,7 +101,7 @@ fun Calender(modifier: Modifier = Modifier, bookingData: List<BookingResponse> =
                             )
                         } else {
                             val date:String = "$year-$month-$day"
-                            val isMatch =isDateMatching(bookingData,date)
+                             val isMatch =isDateMatching(bookingData,date)
                             Text(
                                 text = day.toString(),
                                 modifier = Modifier
@@ -125,10 +127,10 @@ fun Calender(modifier: Modifier = Modifier, bookingData: List<BookingResponse> =
 }
 
 
-fun isDateMatching(slots: List<BookingResponse>, inputDate: String): Boolean {
+fun isDateMatching(slots: List<BookingData>, inputDate: String): Boolean {
     for (slot in slots) {
         val inputDateNormalized = normalizeDate(inputDate)
-        val matches = slot.data.date.toString() == inputDateNormalized
+        val matches = slot.date == inputDateNormalized
         if (matches) {
             return true
         }

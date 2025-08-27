@@ -22,6 +22,7 @@ import com.example.parkingslot.mainpages.transferSlot.TransferSlot
 import com.example.parkingslot.mainpages.userauth.Login
 import com.example.parkingslot.mainpages.userauth.SignUp
 import com.example.parkingslot.sharedView.BookingViewModel
+import com.example.parkingslot.webConnect.dto.booking.BookingData
 import com.example.parkingslot.webConnect.dto.booking.BookingResponse
 import com.example.parkingslot.webConnect.dto.parkingArea.ParkingAreaData
 import com.google.gson.Gson
@@ -81,7 +82,6 @@ fun MyAppNavigation() {
                 val parkingAreaId =it.arguments?.getString("parkingAreaId")
                 parkingArea(
                     navController,
-                    bookingViewModel = bookingViewModel,
                     parkingAreaId =parkingAreaId?:"0"
                 )
             }
@@ -131,19 +131,21 @@ fun MyAppNavigation() {
             }
 
             //showing available slots
-            composable("${Routes.availableSlots}/{slotsJson}") { backStackEntry->
+            composable("${Routes.availableSlots}/{slotsJson}/{parkingAreaId}") { backStackEntry->
                 val json = backStackEntry.arguments?.getString("slotsJson")
-                val freeSlots = Gson().fromJson(json, Array<BookingResponse>::class.java).toList()
+                val freeSlots = Gson().fromJson(json, Array<BookingData>::class.java).toList()
+                val parkingAreaId = backStackEntry.arguments?.getString("parkingAreaId")
                 AvailableSlot(
                     bookingData = freeSlots,
                     year = year,
                     month = month,
-                    navController = navController
+                    navController = navController,
+                    parkingAreaId = parkingAreaId
                 )
             }
             // for available slot calender change button
             composable(
-                route = "${Routes.availableSlots}/{year}/{month}/{slotsJson}",
+                route = "${Routes.availableSlots}/{year}/{month}/{slotsJson}/{parkingAreaId}",
                 arguments = listOf(
                     navArgument("year") { type = NavType.IntType },
                     navArgument("month") { type = NavType.IntType }
@@ -154,31 +156,35 @@ fun MyAppNavigation() {
                 val json = backStackEntry.arguments?.getString("slotsJson")
                 val decodedJson = URLDecoder.decode(json, "UTF-8")
                 val slotsData =
-                    Gson().fromJson(decodedJson, Array<BookingResponse>::class.java).toList()
+                    Gson().fromJson(decodedJson, Array<BookingData>::class.java).toList()
+                val parkingAreaId = backStackEntry.arguments?.getString("parkingAreaId")
                 AvailableSlot(
                     year = year,
                     month = month,
                     navController = navController,
-                    bookingData = slotsData
+                    bookingData = slotsData,
+                    parkingAreaId = parkingAreaId
                 )
             }
 
 
             //for current bookings
-            composable("${Routes.myBookings}/{slotsJson}") { backStackEntry ->
+            composable("${Routes.myBookings}/{slotsJson}/{parkingAreaId}") { backStackEntry ->
                 val json = backStackEntry.arguments?.getString("slotsJson")
-                val bookedSlots = Gson().fromJson(json, Array<BookingResponse>::class.java).toList()
+                val bookedSlots = Gson().fromJson(json, Array<BookingData>::class.java).toList()
+                val parkingAreaId = backStackEntry.arguments?.getString("parkingAreaId")
                 myBookings(
                     bookingData = bookedSlots,
                     year = year,
                     month = month,
-                    navController = navController
+                    navController = navController,
+                    parkingAreaId = parkingAreaId
                 )
             }
 
             //for calender forward and backward button
             composable(
-                route = "${Routes.myBookings}/{year}/{month}/{slotsJson}",
+                route = "${Routes.myBookings}/{year}/{month}/{slotsJson}/{parkingAreaId}",
                 arguments = listOf(
                     navArgument("year") { type = NavType.IntType },
                     navArgument("month") { type = NavType.IntType }
@@ -189,12 +195,14 @@ fun MyAppNavigation() {
                 val json = backStackEntry.arguments?.getString("slotsJson")
                 val decodedJson = URLDecoder.decode(json, "UTF-8")
                 val slotsData =
-                    Gson().fromJson(decodedJson, Array<BookingResponse>::class.java).toList()
+                    Gson().fromJson(decodedJson, Array<BookingData>::class.java).toList()
+                val parkingAreaId = backStackEntry.arguments?.getString("parkingAreaId")
                 myBookings(
                     year = year,
                     month = month,
                     navController = navController,
-                    bookingData = slotsData
+                    bookingData = slotsData,
+                    parkingAreaId = parkingAreaId
                 )
 
             }

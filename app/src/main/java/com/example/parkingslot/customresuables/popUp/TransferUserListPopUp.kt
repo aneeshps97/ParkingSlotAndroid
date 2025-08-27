@@ -10,8 +10,11 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowForward
@@ -24,6 +27,7 @@ import androidx.compose.material3.SegmentedButtonDefaults.Icon
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -31,15 +35,16 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.navigation.NavController
+import com.example.parkingslot.webConnect.dto.user.User
 
 @Composable
-fun TransferOrReleasePopup(
+fun TransferUserListPopUp(
     showDialog: Boolean,
     onDismiss: () -> Unit,
-    onTransfer: () -> Unit,
-    onRelease: () -> Unit,
     navController: NavController,
     slotName: String?,
+    userList: MutableList<User>, // Add this parameter to pass the list
+    onUserSelected: (Int) -> Unit // Callback when a user is selected
 ) {
     if (showDialog) {
         Dialog(onDismissRequest = onDismiss) {
@@ -53,67 +58,56 @@ fun TransferOrReleasePopup(
                         color = Color.Black,
                         shape = RoundedCornerShape(10.dp)
                     )
+                    .padding(16.dp),
+                contentAlignment = Alignment.Center
             ) {
                 Column(
-                    verticalArrangement = Arrangement.spacedBy(5.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .heightIn(max = 400.dp), // Limit height for scroll
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.spacedBy(10.dp)
                 ) {
-                    Spacer(modifier = Modifier.height(20.dp))
                     Text(
-                        fontSize = 30.sp,
-                        text = "SLOT : ${slotName?.toUpperCase()}",
+                        fontSize = 14.sp,
+                        text = "SLOT : ${slotName?.uppercase()}",
                         style = MaterialTheme.typography.titleMedium,
                         color = Color.Black,
-                        modifier = Modifier.padding(bottom = 16.dp)
+                        modifier = Modifier.padding(bottom = 8.dp)
                     )
 
-                    Button(
-                        onClick = onTransfer,
+                    // Scrollable list of buttons
+                    LazyColumn(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(10.dp),
-                        shape = RoundedCornerShape(10.dp),
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = Color.White,
-                            contentColor = Color.Black
-                        ),
-                        border = BorderStroke(1.dp, Color.Black),
+                            .weight(1f)
+                            .padding(vertical = 8.dp),
+                        verticalArrangement = Arrangement.spacedBy(8.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally
                     ) {
-                        Icon(
-                            Icons.Default.ArrowForward,
-                            contentDescription = "Release",
-                            tint = Color.Black
-                        )
-                        Spacer(Modifier.width(8.dp))
-                        Text("Transfer Slot",fontSize = 15.sp)
+                        items(userList) { user ->
+                            Button(
+                                onClick = { user.id?.let { onUserSelected(it) } },
+                                modifier = Modifier
+                                    .fillMaxWidth(0.8f)
+                                    .height(48.dp), // Rectangular height
+                                colors = ButtonDefaults.buttonColors(
+                                    containerColor = Color.Black,
+                                    contentColor = Color.White
+                                ),
+                                shape = RoundedCornerShape(12.dp) // Rounded corners
+                            ) {
+                                Text(user.name)
+                            }
+                        }
                     }
 
-                    Button(
-                        onClick = onRelease,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(10.dp),
-                        shape = RoundedCornerShape(10.dp),
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = Color.White,
-                            contentColor = Color.Black
-                        ),
-                        border = BorderStroke(1.dp, Color.Black),) {
-                        Icon(
-                            Icons.Default.ExitToApp,
-                            contentDescription = "Release",
-                            tint = Color.Black
-                        )
-                        Spacer(Modifier.width(8.dp))
-                        Text("Release Slot", fontSize = 15.sp)
-                    }
 
                     TextButton(onClick = onDismiss) {
-                        Text("Cancel",color = Color.Black)
+                        Text("Cancel", color = Color.Black)
                     }
                 }
             }
         }
     }
-
 }
