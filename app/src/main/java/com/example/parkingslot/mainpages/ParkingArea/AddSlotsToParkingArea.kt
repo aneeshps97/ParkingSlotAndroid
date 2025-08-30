@@ -29,7 +29,7 @@ import com.example.parkingslot.customresuables.scrollables.ScrollableBoxContent
 import com.example.parkingslot.customresuables.textfields.InputTextFieldWithButton
 import com.example.parkingslot.mainpages.background.PageBackground
 import com.example.parkingslot.webConnect.dto.parkingArea.ParkingAreaResponse
-import com.example.parkingslot.webConnect.dto.parkingArea.Slot
+import com.example.parkingslot.webConnect.dto.slot.Slot
 import com.example.parkingslot.webConnect.retrofit.ParkingSlotApi
 import com.example.parkingslot.webConnect.retrofit.RetrofitService
 import retrofit2.Call

@@ -6,12 +6,15 @@ import com.example.parkingslot.webConnect.dto.login.LoginRequest
 import com.example.parkingslot.webConnect.dto.login.LoginResponse
 import com.example.parkingslot.webConnect.dto.parkingArea.ParkingAreaRequest
 import com.example.parkingslot.webConnect.dto.parkingArea.ParkingAreaResponse
-import com.example.parkingslot.webConnect.dto.parkingArea.Slot
+import com.example.parkingslot.webConnect.dto.slot.Slot
 import com.example.parkingslot.webConnect.dto.signup.SignUpRequest
 import com.example.parkingslot.webConnect.dto.signup.SignUpResponse
+import com.example.parkingslot.webConnect.dto.slot.SlotData
+import com.example.parkingslot.webConnect.dto.slot.SlotDataResponse
 import com.example.parkingslot.webConnect.dto.user.UserResponse
 import retrofit2.Call
 import retrofit2.http.Body
+import retrofit2.http.DELETE
 import retrofit2.http.GET
 import retrofit2.http.POST
 import retrofit2.http.PUT
@@ -83,5 +86,25 @@ interface ParkingSlotApi {
     fun findUserDetailsById(
         @Query("userId") userId: Int?
     ): Call<UserResponse>
+
+    @PUT("/parkingslot/parkingArea/updateName/{id}")
+    fun updateParkingAreaName(
+        @Path("id") id: Int,
+        @Query("newName") newName: String
+    ): Call<ParkingAreaResponse>
+
+    @DELETE("/parkingslot/slot/deleteSlot/{slotId}")
+    fun deleteSlot(
+        @Path("slotId") slotId: Int,
+    ): Call<SlotDataResponse>
+
+    @PUT("/parkingslot/slot/updateSlot/{slotId}")
+    fun updateSlot(
+        @Body slot: SlotData,
+        @Path("slotId") slotId: Int
+
+    ): Call<SlotDataResponse>
+
+
 
 }

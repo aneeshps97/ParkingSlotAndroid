@@ -1,9 +1,7 @@
 package com.example.parkingslot.mainpages.ParkingArea
 
 import android.content.Context
-import android.widget.Toast
 import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -22,9 +20,10 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import androidx.navigation.testing.TestNavHostController
 import com.example.parkingslot.Route.Routes
 import com.example.parkingslot.mainpages.background.PageBackground
-import com.example.parkingslot.webConnect.dto.user.ParkingAreaData
+import com.example.parkingslot.webConnect.dto.parkingArea.ParkingAreaData
 
 @Composable
 fun ViewYourParkingAreas(
@@ -66,9 +65,9 @@ fun ViewYourParkingAreas(
                         ParkingAreas(
                             text = parkingArea.name ?: "Unnamed Area",
                             onClick = { navController.navigate(Routes.parkingArea+"/"+parkingArea.parkingAreaId)},
-                            showEditButton = true,
+                            showEditButton = (userId==parkingArea.adminId),
                             onEditClick = {
-                                Toast.makeText(context, "Edit clicked: ${parkingArea.name}", Toast.LENGTH_SHORT).show()
+                                navController.navigate(Routes.editParkingArea+"/"+parkingArea.parkingAreaId+"/"+parkingArea.name)
                             }
                         )
                     }
@@ -115,14 +114,45 @@ fun ParkingAreas(
         }
 
         if (showEditButton) {
-            Icon(
-                imageVector = Icons.Default.Edit,
-                contentDescription = "Edit",
+            Button(
+                onClick = onEditClick,
                 modifier = Modifier
                     .padding(start = 8.dp)
-                    .clickable { onEditClick() }
-            )
+                    .height(56.dp), // Match other button heights
+                shape = RoundedCornerShape(8.dp),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = Color.Black,
+                    contentColor = Color.White
+                )
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Edit,
+                    contentDescription = "Edit"
+                )
+            }
         }
     }
 }
 
+@Preview(showBackground = true)
+@Composable
+fun PreviewViewYourParkingAreas() {
+    val sampleParkingAreas = listOf(
+        ParkingAreaData(parkingAreaId = 1, name = "Parking Area A",2,emptyList(),emptyList()),
+    )
+    val navController = TestNavHostController(LocalContext.current)
+    ViewYourParkingAreas(
+        navController = navController,
+        parkingAreas = sampleParkingAreas
+    )
+}
+
+@Preview(showBackground = true)
+@Composable
+fun PreviewParkingAreas() {
+    ParkingAreas(
+        text = "Sample Parking Area",
+        onClick = {},
+        onEditClick = {}
+    )
+}

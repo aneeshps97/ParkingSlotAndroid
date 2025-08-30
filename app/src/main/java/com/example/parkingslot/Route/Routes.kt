@@ -21,4 +21,8 @@ object Routes {
     var assignSlotForUsers = "AssignSlotForUsers"
 
     var viewYourParkingAreas = "ViewYourParkingAreas"
+
+    var editParkingArea = "EditParkingArea"
+
+    var editSlots = "EditSlots"
 }

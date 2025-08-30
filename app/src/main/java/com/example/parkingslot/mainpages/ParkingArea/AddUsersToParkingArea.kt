@@ -175,7 +175,6 @@ fun ScrollableBoxContentForUsers(listofData: List<User>,
     ) {
         Column {listofData.forEachIndexed { index, data ->
             LabelWithTrailingIcon(
-                "",
                 data.name,
                 { onRemove(index) }   // call back to parent
             )

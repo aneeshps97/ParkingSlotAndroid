@@ -56,8 +56,8 @@ import com.example.parkingslot.mainpages.background.PageBackground
 import com.example.parkingslot.webConnect.dto.booking.BookingRequest
 import com.example.parkingslot.webConnect.dto.booking.BookingResponse
 import com.example.parkingslot.webConnect.dto.parkingArea.ParkingAreaData
-import com.example.parkingslot.webConnect.dto.parkingArea.SlotData
-import com.example.parkingslot.webConnect.dto.parkingArea.UserData
+import com.example.parkingslot.webConnect.dto.slot.SlotData
+import com.example.parkingslot.webConnect.dto.user.UserData
 import com.example.parkingslot.webConnect.retrofit.ParkingSlotApi
 import com.example.parkingslot.webConnect.retrofit.RetrofitService
 import java.time.LocalDate

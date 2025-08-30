@@ -25,7 +25,6 @@ fun ScrollableBoxContent(listofData: List<String>,
     ) {
         Column {listofData.forEachIndexed { index, data ->
             LabelWithTrailingIcon(
-                "",
                 data,
                 { onRemove(index) }   // call back to parent
             )

@@ -23,19 +23,24 @@ import com.example.parkingslot.webConnect.retrofit.RetrofitService
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
+import java.time.LocalDate
+import java.time.format.DateTimeFormatter
 
 @Composable
 fun AvailableSlot(
     modifier: Modifier = Modifier,
-    year: Int = 2025,
-    month: Int = 8,
+    year: Int,
+    month: Int,
     navController: NavController,
     bookingData: List<BookingData> = emptyList<BookingData>(),
     parkingAreaId:String?
 ) {
     var showConfirmationDialog by remember { mutableStateOf(false) }
     val context = LocalContext.current
-    var dateSelected:String="2025-08-07"
+    val today = LocalDate.now()
+    val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
+    val formattedDate = today.format(formatter)
+    var dateSelected:String=formattedDate
     val sharedPref = remember { context.getSharedPreferences("loginPref", Context.MODE_PRIVATE) }
     val userId = sharedPref.getInt("user_id",1)
     PageBackground() {
