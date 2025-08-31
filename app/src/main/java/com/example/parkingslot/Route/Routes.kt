@@ -25,4 +25,6 @@ object Routes {
     var editParkingArea = "EditParkingArea"
 
     var editSlots = "EditSlots"
+
+    var editUsers = "EditUsers"
 }

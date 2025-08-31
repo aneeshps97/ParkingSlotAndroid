@@ -70,7 +70,7 @@ interface ParkingSlotApi {
 
     @PUT("parkingslot/parkingArea/{id}/addUsers")
     fun addUsersToParkingArea(
-        @Path("id") id: Int, @Body slots: List<Int>
+        @Path("id") id: Int, @Body users: List<Int>
     ): Call<ParkingAreaResponse>
 
     @POST(value = "/parkingslot/booking/assignSlotsToUser")
@@ -98,10 +98,23 @@ interface ParkingSlotApi {
         @Path("slotId") slotId: Int,
     ): Call<SlotDataResponse>
 
+    @PUT("/parkingslot/parkingArea/removeUserFromParkingArea/{parkingAreaId}")
+    fun removeUserFromParkingArea(
+        @Path("parkingAreaId") parkingAreaId: Int,
+        @Query("userId") userId:Int
+    ): Call<ParkingAreaResponse>
+
     @PUT("/parkingslot/slot/updateSlot/{slotId}")
     fun updateSlot(
         @Body slot: SlotData,
         @Path("slotId") slotId: Int
+
+    ): Call<SlotDataResponse>
+
+    @POST("/parkingslot/slot/createSlot/{parkingAreaId}")
+    fun addSlots(
+        @Body slot: Slot,
+        @Path(value = "parkingAreaId") parkingAreaId: Int
 
     ): Call<SlotDataResponse>
 

@@ -14,6 +14,7 @@ import com.example.parkingslot.mainpages.ParkingArea.AssignSlotForUsers
 import com.example.parkingslot.mainpages.ParkingArea.CreateParkingArea
 import com.example.parkingslot.mainpages.ParkingArea.EditParkingArea
 import com.example.parkingslot.mainpages.ParkingArea.EditSlots
+import com.example.parkingslot.mainpages.ParkingArea.EditUsers
 import com.example.parkingslot.mainpages.ParkingArea.ViewYourParkingAreas
 import com.example.parkingslot.mainpages.ParkingArea.parkingArea
 import com.example.parkingslot.mainpages.availableslot.AvailableSlot
@@ -108,6 +109,17 @@ fun MyAppNavigation() {
                     parkingAreaData = parkingAreaData
                 )
             }
+
+            composable("${Routes.editUsers}/{parkingAreaData}") { backStackEntry ->
+                val json = backStackEntry.arguments?.getString("parkingAreaData")
+                val parkingAreaData = Gson().fromJson(json, ParkingAreaData::class.java)
+                EditUsers(
+                    navController = navController,
+                    parkingAreaData = parkingAreaData
+                )
+            }
+
+
 
 
 

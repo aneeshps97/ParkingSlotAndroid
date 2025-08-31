@@ -29,6 +29,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -37,10 +38,12 @@ import androidx.navigation.compose.rememberNavController
 import com.example.parkingslot.Route.Routes
 import com.example.parkingslot.customresuables.confirm.ConfirmPopUp
 import com.example.parkingslot.customresuables.labels.LabelWithTrailingIcon
+import com.example.parkingslot.customresuables.popUp.AddParkingSlotPopUp
 import com.example.parkingslot.customresuables.popUp.UpdateSlotDataPopUp
 import com.example.parkingslot.mainpages.background.PageBackground
 import com.example.parkingslot.webConnect.dto.slot.SlotData
 import com.example.parkingslot.webConnect.dto.parkingArea.ParkingAreaData
+import com.example.parkingslot.webConnect.dto.slot.Slot
 import com.example.parkingslot.webConnect.dto.slot.SlotDataResponse
 import com.example.parkingslot.webConnect.dto.user.UserData
 import com.example.parkingslot.webConnect.retrofit.ParkingSlotApi
@@ -60,6 +63,8 @@ fun EditSlots(
     }
     val showRemoveSlot = remember { mutableStateOf(false) }
     val showUpdateSlot = remember { mutableStateOf(false) }
+    val showAddSlot = remember { mutableStateOf(false) }
+
     val slotToRemove = remember { mutableStateOf(SlotData(0, "")) }
     val slotToUpdate = remember { mutableStateOf(SlotData(0, "")) }
     val context: Context = LocalContext.current
@@ -86,7 +91,15 @@ fun EditSlots(
             onDismiss = {showUpdateSlot.value=false},
             navController = navController,
             slotData = slotToUpdate.value,
-            onSlotUpdated = {slotData->handleSlotUpdated(slotData,context,showUpdateSlot)}
+            onSlotUpdated = {slotData->handleSlotUpdated(slotData,context,showUpdateSlot,listOfSlots)}
+        )
+
+        AddParkingSlotPopUp(
+            showDialog = showAddSlot.value,
+            onDismiss = {showAddSlot.value=false},
+            navController = navController,
+            onSlotAdded = {slot->handleSlotAdded(slot,context,showUpdateSlot,listOfSlots,
+                parkingAreaData.parkingAreaId)}
         )
 
         Column ( modifier= modifier.fillMaxSize()){
@@ -130,7 +143,7 @@ fun EditSlots(
                     Column {
 
                         Button(
-                            onClick = {navController.navigate(Routes.editParkingArea+"/"+parkingAreaData.parkingAreaId+"/"+parkingAreaData.name)},
+                            onClick = {showAddSlot.value=true},
                             modifier = Modifier
                                 .height(60.dp)
                                 .fillMaxWidth(0.9f),
@@ -182,7 +195,33 @@ fun EditSlots(
 
 }
 
-fun handleSlotUpdated(slotData: SlotData,context: Context,showUpdateSlot: MutableState<Boolean>,){
+fun handleSlotAdded(slot: Slot, context: Context, showUpdateSlot: MutableState<Boolean>, listOfSlots: MutableList<SlotData>,parkingAreaId:Int){
+    val api = RetrofitService.getRetrofit().create(ParkingSlotApi::class.java)
+    api.addSlots(slot,parkingAreaId).enqueue(object :Callback<SlotDataResponse>{
+        override fun onResponse(
+            call: Call<SlotDataResponse?>,
+            response: Response<SlotDataResponse?>
+        ) {
+            if(response.body()?.status==0){
+                Toast.makeText(context, "Slot added", Toast.LENGTH_SHORT).show()
+                response.body()?.data?.let { listOfSlots.add(it) }
+                showUpdateSlot.value = false
+            }else{
+                Toast.makeText(context, "failed", Toast.LENGTH_SHORT).show()
+            }
+        }
+
+        override fun onFailure(
+            call: Call<SlotDataResponse?>,
+            t: Throwable
+        ) {
+            TODO("Not yet implemented")
+        }
+
+    })
+}
+
+fun handleSlotUpdated(slotData: SlotData,context: Context,showUpdateSlot: MutableState<Boolean>,listOfSlots: MutableList<SlotData>){
     val api = RetrofitService.getRetrofit().create(ParkingSlotApi::class.java)
     api.updateSlot(slotData,slotData.slotId).enqueue(object :Callback<SlotDataResponse>{
         override fun onResponse(
@@ -191,9 +230,11 @@ fun handleSlotUpdated(slotData: SlotData,context: Context,showUpdateSlot: Mutabl
         ) {
             if(response.body()?.status==0){
                 Toast.makeText(context, "Slot upated", Toast.LENGTH_SHORT).show()
+                listOfSlots.removeIf { slot->slot.slotId==slotData.slotId }
+                listOfSlots.add(slotData)
                 showUpdateSlot.value = false
             }else{
-                Toast.makeText(context, "Slot failed", Toast.LENGTH_SHORT).show()
+                Toast.makeText(context, "failed", Toast.LENGTH_SHORT).show()
             }
         }
 

@@ -5,6 +5,7 @@ import android.net.Uri
 import android.util.Log
 import android.widget.Toast
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -13,6 +14,7 @@ import androidx.compose.material.icons.filled.ArrowForward
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -40,6 +42,10 @@ import com.google.gson.Gson
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
+
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Text
+import androidx.compose.material3.OutlinedTextFieldDefaults
 
 @Composable
 fun EditParkingArea(
@@ -75,10 +81,14 @@ fun EditParkingArea(
                             horizontalArrangement = Arrangement.spacedBy(8.dp)
                         ) {
                             Box(modifier = Modifier.weight(1f)) {
-                                LabeledTextField(
+                                OutlinedTextField(
                                     value = name.toString(),
                                     onValueChange = { name = it },
-                                    label = "Name"
+                                    modifier = modifier,
+                                    colors = OutlinedTextFieldDefaults.colors(
+                                        focusedBorderColor = Color.DarkGray,
+                                        unfocusedBorderColor = Color.Black,
+                                    )
                                 )
                             }
 
@@ -127,7 +137,7 @@ fun EditParkingArea(
                         Spacer(modifier = Modifier.height(20.dp)) // for horizontal spacing
 
                         Button(
-                            onClick = {},
+                            onClick = {handleEditUsersClick(parkingAreaId,context,navController)},
                             modifier = Modifier
                                 .height(60.dp)
                                 .fillMaxWidth(),
@@ -199,6 +209,30 @@ fun EditParkingArea(
             }
         }
     }
+}
+
+
+fun handleEditUsersClick( parkingAreaId: String?,context: Context,navController: NavController){
+    val api = RetrofitService.getRetrofit().create(ParkingSlotApi::class.java)
+    api.findParkingAreaById(parkingAreaId = Integer.parseInt(parkingAreaId)).enqueue(object : Callback<ParkingAreaResponse> {
+        override fun onResponse(call: Call<ParkingAreaResponse>, response: Response<ParkingAreaResponse>) {
+            if ( response.body()!=null) {
+                if(response.body()?.status==0){
+                    val gson = Gson()
+                    val json = Uri.encode(gson.toJson(response.body()?.data))
+                    navController.navigate(Routes.editUsers + "/$json")
+                }else{
+                    Toast.makeText(context, "Data not found ", Toast.LENGTH_SHORT).show()
+                }
+            } else {
+                Toast.makeText(context, "Data not found", Toast.LENGTH_SHORT).show()
+            }
+        }
+
+        override fun onFailure(call: Call<ParkingAreaResponse>, t: Throwable) {
+            Toast.makeText(context, "Error: ${t.message}", Toast.LENGTH_SHORT).show()
+        }
+    })
 }
 
 fun handleEditSlotsClick( parkingAreaId: String?,context: Context,navController: NavController){
