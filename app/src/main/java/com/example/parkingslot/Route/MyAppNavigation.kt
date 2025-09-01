@@ -80,11 +80,15 @@ fun MyAppNavigation() {
                 )
             }
             //parking area page
-            composable(Routes.parkingArea + "/{parkingAreaId}") {
+            composable(Routes.parkingArea + "/{parkingAreaId}/{parkingAreaName}/{adminId}") {
                 val parkingAreaId = it.arguments?.getString("parkingAreaId")
+                val parkingAreaName = it.arguments?.getString("parkingAreaName")
+                val adminId = it.arguments?.getString("adminId")
                 parkingArea(
                     navController,
-                    parkingAreaId = parkingAreaId ?: "0"
+                    parkingAreaId = parkingAreaId ?: "0",
+                    parkingAreaName = parkingAreaName?:"",
+                    adminId = adminId?:"-1"
                 )
             }
 

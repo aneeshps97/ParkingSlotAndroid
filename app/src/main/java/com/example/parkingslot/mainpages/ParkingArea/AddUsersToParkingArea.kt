@@ -191,9 +191,6 @@ fun handleFindingUserByEmail(
     showConfirmationDialog: MutableState<Boolean>,
     userState: MutableState<User?>
 ) {
-    Toast.makeText(
-        context, "this is invoked1", Toast.LENGTH_SHORT
-    ).show()
     val api = RetrofitService.getRetrofit().create(ParkingSlotApi::class.java)
     api.findUserByEmail(email=email).enqueue(object : Callback<UserResponse> {
         override fun onResponse(

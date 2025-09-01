@@ -2,38 +2,25 @@ package com.example.parkingslot.mainpages.ParkingArea
 
 import android.content.Context
 import android.net.Uri
-import android.util.Log
 import android.widget.Toast
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.material3.Button
-import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
-
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
-
+import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
-import androidx.compose.ui.platform.LocalContext
 import androidx.navigation.NavController
 import com.example.parkingslot.Route.Routes
 import com.example.parkingslot.mainpages.background.PageBackground
-import com.example.parkingslot.customresuables.buttons.LogOutButton
 import com.example.parkingslot.customresuables.confirm.ConfirmPopUp
-import com.example.parkingslot.sharedView.BookingViewModel
 import com.example.parkingslot.webConnect.dto.booking.BookingData
 import com.example.parkingslot.webConnect.dto.booking.BookingResponse
-import com.example.parkingslot.webConnect.dto.parkingArea.ParkingAreaData
 import com.example.parkingslot.webConnect.dto.parkingArea.ParkingAreaResponse
 import com.example.parkingslot.webConnect.retrofit.ParkingSlotApi
 import com.example.parkingslot.webConnect.retrofit.RetrofitService
@@ -46,7 +33,9 @@ import java.time.LocalDate
 @Composable
 fun parkingArea(
     navController: NavController, modifier: Modifier = Modifier,
-    parkingAreaId: String
+    parkingAreaId: String,
+    parkingAreaName: String,
+    adminId:String,
 ) {
     val context = LocalContext.current
     val sharedPref = remember { context.getSharedPreferences("loginPref", Context.MODE_PRIVATE) }
@@ -54,61 +43,102 @@ fun parkingArea(
     var showConfirmationDialog by remember { mutableStateOf(false) }
 
     PageBackground {
-        ConfirmPopUp(
-            showDialog = showConfirmationDialog,
-            onDismiss = { showConfirmationDialog = false },
-            onConfirm = {
-                val sharedPref = context.getSharedPreferences("loginPref", Context.MODE_PRIVATE)
-                with(sharedPref.edit()) {
-                    clear()   // or remove("your_key") for specific key
-                    apply()
+        Box(modifier = Modifier.fillMaxSize()) {
+            ConfirmPopUp(
+                showDialog = showConfirmationDialog,
+                onDismiss = { showConfirmationDialog = false },
+                onConfirm = {
+
                 }
-                navController.navigate(Routes.login)
-                // Handle confirm logic here
-            }
-        )
-        Box(contentAlignment = Alignment.Center) {
-            LogOutButton({
-                showConfirmationDialog = true
-            })
-
-
-            Column(
-                verticalArrangement = Arrangement.spacedBy(12.dp),
-                horizontalAlignment = Alignment.CenterHorizontally
+            )
+            Box(
+                modifier = Modifier.fillMaxSize(),
+                contentAlignment = Alignment.TopCenter
             ) {
-                DashboardButton("View Ticket") {
-                    val today = LocalDate.now().toString()
-                    val currentBookingData: BookingResponse? = getBookingByUserParkingAndDate(
-                        parkingAreaId = parkingAreaId.toInt(),
-                        context = context,
-                        date = today,
-                        userId = userId,
-                        navController = navController
-                    )
-
+                Text(parkingAreaName)
+            }
+            Box(
+                modifier = Modifier.fillMaxSize(),
+                contentAlignment = Alignment.Center
+            ) {
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.spacedBy(16.dp)
+                ) {
+                    DashboardButton("View Ticket") {
+                        val today = LocalDate.now().toString()
+                        val currentBookingData: BookingResponse? =
+                            getBookingByUserParkingAndDate(
+                                parkingAreaId = parkingAreaId.toInt(),
+                                context = context,
+                                date = today,
+                                userId = userId,
+                                navController = navController
+                            )
+                    }
+                    DashboardButton("Available Slots") {
+                        getFreeSlotsInParkingArea(
+                            userId = userId,
+                            parkingAreaId = Integer.parseInt(parkingAreaId),
+                            navController = navController,
+                            context = context
+                        )
+                    }
+                    DashboardButton("My Bookings") {
+                        getCurrentBookingOfUser(
+                            userId = userId,
+                            parkingAreaId = Integer.parseInt(parkingAreaId),
+                            navController = navController,
+                            context = context
+                        )
+                    }
+                    if(userId.toString().equals(adminId.toString())){
+                        Spacer(modifier.height(30.dp))
+                        DashboardButton("Delete ParkingArea") {
+                            handleDeleteParkingArea(Integer.parseInt(parkingAreaId),context,navController)
+                        }
+                        DashboardButton("Update ParkingArea") {
+                            navController.navigate(Routes.editParkingArea + "/" + parkingAreaId + "/" + parkingAreaName)
+                        }
+                    }
                 }
-                DashboardButton("Available Slots") {
-                    getFreeSlotsInParkingArea(
-                        userId = userId,
-                        parkingAreaId = Integer.parseInt(parkingAreaId),
-                        navController = navController,
-                        context = context
-                    )
-                }
-                DashboardButton("My Bookings") {
-                    getCurrentBookingOfUser(
-                        userId = userId,
-                        parkingAreaId = Integer.parseInt(parkingAreaId),
-                        navController = navController,
-                        context = context
-                    )
-
-                }
-
             }
         }
+    }
+}
 
+fun handleDeleteParkingArea(parkingAreaId: Int,context: Context,navController: NavController){
+    try {
+        //when it is success navigate to home page
+        val api = RetrofitService.getRetrofit().create(ParkingSlotApi::class.java)
+        api.deleteParkingArea(parkingAreaId)
+            .enqueue(object : Callback<ParkingAreaResponse>{
+                override fun onResponse(
+                    call: Call<ParkingAreaResponse?>,
+                    response: Response<ParkingAreaResponse?>
+                ) {
+                    if(response.body()?.status==0){
+                        Toast.makeText(context, "parking area deleted", Toast.LENGTH_SHORT)
+                            .show()
+                        navController.navigate(Routes.homePage)
+                    }else{
+                        Toast.makeText(context, "failed", Toast.LENGTH_SHORT)
+                            .show()
+                    }
+
+                }
+
+                override fun onFailure(
+                    call: Call<ParkingAreaResponse?>,
+                    t: Throwable
+                ) {
+                    Toast.makeText(context, "Error: ${t.message}", Toast.LENGTH_SHORT)
+                        .show()
+                }
+            })
+
+    }catch (e: Exception) {
+        Toast.makeText(context, "Exception occurred: ${e.message}", Toast.LENGTH_SHORT).show()
     }
 }
 
@@ -128,30 +158,27 @@ fun getFreeSlotsInParkingArea(
                     response: Response<BookingResponse>
                 ) {
                     if (response.isSuccessful && response.body() != null) {
-                        if(response.body()?.status==0){
+                        if (response.body()?.status == 0) {
                             response.body()?.data?.let { bookedSlots.addAll(it) }
                             val json = Uri.encode(Gson().toJson(bookedSlots))
                             navController.navigate(Routes.availableSlots + "/$json/" + parkingAreaId)
-                        }else{
-                            Toast.makeText(context, "No free slots available", Toast.LENGTH_SHORT).show()
+                        } else {
+                            Toast.makeText(context, "No free slots available", Toast.LENGTH_SHORT)
+                                .show()
                         }
                     } else {
                         Toast.makeText(context, "Failed to find data", Toast.LENGTH_SHORT).show()
-                        Log.e("BookingError", "Response unsuccessful or body is null")
                     }
                 }
 
                 override fun onFailure(call: Call<BookingResponse>, t: Throwable) {
                     Toast.makeText(context, "Error: ${t.message}", Toast.LENGTH_SHORT).show()
-                    Log.e("BookingError", "API call failed", t)
                 }
             })
     } catch (e: Exception) {
         Toast.makeText(context, "Exception occurred: ${e.message}", Toast.LENGTH_SHORT).show()
-        Log.e("BookingException", "Exception in getCurrentBookingOfUser", e)
     }
 }
-
 
 fun getCurrentBookingOfUser(
     userId: Int,
@@ -170,30 +197,26 @@ fun getCurrentBookingOfUser(
                     response: Response<BookingResponse>
                 ) {
                     if (response.isSuccessful && response.body() != null) {
-                        if(response.body()?.status==0){
+                        if (response.body()?.status == 0) {
                             response.body()?.data?.let { bookedSlots.addAll(it) }
                             val json = Uri.encode(Gson().toJson(bookedSlots))
                             navController.navigate(Routes.myBookings + "/$json/" + parkingAreaId)
-                        }else{
+                        } else {
                             Toast.makeText(context, "No booked slots", Toast.LENGTH_SHORT).show()
                         }
                     } else {
                         Toast.makeText(context, "Failed to find data", Toast.LENGTH_SHORT).show()
-                        Log.e("BookingError", "Response unsuccessful or body is null")
                     }
                 }
 
                 override fun onFailure(call: Call<BookingResponse>, t: Throwable) {
                     Toast.makeText(context, "Error: ${t.message}", Toast.LENGTH_SHORT).show()
-                    Log.e("BookingError", "API call failed", t)
                 }
             })
     } catch (e: Exception) {
         Toast.makeText(context, "Exception occurred: ${e.message}", Toast.LENGTH_SHORT).show()
-        Log.e("BookingException", "Exception in getCurrentBookingOfUser", e)
     }
 }
-
 
 fun getBookingByUserParkingAndDate(
     parkingAreaId: Int,
@@ -213,9 +236,14 @@ fun getBookingByUserParkingAndDate(
             ) {
                 if (response.body() != null) {
                     val slotName = response.body()?.data?.get(0)?.slot?.name
-                    navController.navigate(Routes.parkingTicket + "/" + slotName)
+                    if(slotName!=null){
+                        navController.navigate(Routes.parkingTicket + "/" + slotName)
+                    }else{
+                        Toast.makeText(context, "No Booking for today", Toast.LENGTH_SHORT).show()
+                    }
+
                 } else {
-                    Toast.makeText(context, "unable to fetch data", Toast.LENGTH_SHORT).show()
+
                 }
             }
 
@@ -224,7 +252,7 @@ fun getBookingByUserParkingAndDate(
             }
         })
 
-    return bookingResponse;
+    return bookingResponse
 }
 
 @Composable
@@ -245,5 +273,3 @@ fun DashboardButton(text: String, onClick: () -> Unit = {}) {
         Text(text = text, fontSize = 18.sp, fontWeight = FontWeight.SemiBold)
     }
 }
-
-

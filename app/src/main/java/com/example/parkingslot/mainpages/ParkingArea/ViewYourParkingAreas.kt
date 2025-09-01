@@ -7,6 +7,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
@@ -33,7 +34,7 @@ fun ViewYourParkingAreas(
 ) {
     val context = LocalContext.current
     val sharedPref = remember { context.getSharedPreferences("loginPref", Context.MODE_PRIVATE) }
-    val userId = sharedPref.getInt("user_id", 1)
+    val userId = sharedPref.getInt("user_id", -1)
     val name = sharedPref.getString("name", "")
 
     PageBackground {
@@ -64,10 +65,9 @@ fun ViewYourParkingAreas(
                     items(parkingAreas) { parkingArea ->
                         ParkingAreas(
                             text = parkingArea.name ?: "Unnamed Area",
-                            onClick = { navController.navigate(Routes.parkingArea+"/"+parkingArea.parkingAreaId)},
-                            showEditButton = (userId==parkingArea.adminId),
+                            onClick = { navController.navigate(Routes.parkingArea+"/"+parkingArea.parkingAreaId+"/"+parkingArea.name+"/"+parkingArea.adminId)},
                             onEditClick = {
-                                navController.navigate(Routes.editParkingArea+"/"+parkingArea.parkingAreaId+"/"+parkingArea.name)
+                                navController.navigate(Routes.editParkingArea+"/"+parkingArea.parkingAreaId+"/"+parkingArea.name+"/"+parkingArea.adminId)
                             }
                         )
                     }
@@ -82,8 +82,8 @@ fun ViewYourParkingAreas(
 fun ParkingAreas(
     text: String,
     onClick: () -> Unit = {},
-    showEditButton: Boolean = true,
-    onEditClick: () -> Unit = {}
+    onEditClick: () -> Unit = {},
+    onDeleteClick: () -> Unit ={}
 ) {
     Row(
         modifier = Modifier
@@ -111,25 +111,6 @@ fun ParkingAreas(
                 fontSize = 18.sp,
                 fontWeight = FontWeight.SemiBold
             )
-        }
-
-        if (showEditButton) {
-            Button(
-                onClick = onEditClick,
-                modifier = Modifier
-                    .padding(start = 8.dp)
-                    .height(56.dp), // Match other button heights
-                shape = RoundedCornerShape(8.dp),
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = Color.Black,
-                    contentColor = Color.White
-                )
-            ) {
-                Icon(
-                    imageVector = Icons.Default.Edit,
-                    contentDescription = "Edit"
-                )
-            }
         }
     }
 }

@@ -118,6 +118,11 @@ interface ParkingSlotApi {
 
     ): Call<SlotDataResponse>
 
+    @DELETE("parkingslot/parkingArea/deleteParkingArea/{parkingAreaId}")
+    fun deleteParkingArea(
+        @Path("parkingAreaId") id: Int
+    ): Call<ParkingAreaResponse>
+
 
 
 }
