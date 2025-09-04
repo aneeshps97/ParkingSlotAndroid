@@ -163,6 +163,8 @@ fun getFreeSlotsInParkingArea(
                             val json = Uri.encode(Gson().toJson(bookedSlots))
                             navController.navigate(Routes.availableSlots + "/$json/" + parkingAreaId)
                         } else {
+                            val json = Uri.encode(Gson().toJson(emptyList<BookingData>()))
+                            navController.navigate(Routes.availableSlots + "/$json/" + parkingAreaId)
                             Toast.makeText(context, "No free slots available", Toast.LENGTH_SHORT)
                                 .show()
                         }
@@ -202,6 +204,8 @@ fun getCurrentBookingOfUser(
                             val json = Uri.encode(Gson().toJson(bookedSlots))
                             navController.navigate(Routes.myBookings + "/$json/" + parkingAreaId)
                         } else {
+                            val json = Uri.encode(Gson().toJson(emptyList<BookingData>()))
+                            navController.navigate(Routes.myBookings + "/$json/" + parkingAreaId)
                             Toast.makeText(context, "No booked slots", Toast.LENGTH_SHORT).show()
                         }
                     } else {

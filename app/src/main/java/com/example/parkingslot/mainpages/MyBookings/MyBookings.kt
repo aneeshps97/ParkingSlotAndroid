@@ -51,7 +51,7 @@ fun myBookings(
     var selectedUserIdForTransfer: Int=0
     PageBackground() {
         BackHandler {
-            navController.navigate(Routes.parkingArea + "/$parkingAreaId")
+            navController.navigate(Routes.homePage)
         }
         TransferOrReleasePopup(
             showDialog = showDialog,

@@ -46,16 +46,18 @@ import retrofit2.Response
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.OutlinedTextFieldDefaults
+import com.example.parkingslot.webConnect.dto.booking.BookingData
+import com.example.parkingslot.webConnect.dto.booking.BookingResponse
 
 @Composable
 fun EditParkingArea(
     navController: NavController,
     modifier: Modifier = Modifier,
     parkingAreaId: String?,
-    parkingAreaName :String?
+    parkingAreaName: String?
 ) {
     var name by remember { mutableStateOf(parkingAreaName) }
-    val context:Context = LocalContext.current
+    val context: Context = LocalContext.current
     PageBackground {
         Column(
             modifier = Modifier.fillMaxSize()
@@ -93,7 +95,13 @@ fun EditParkingArea(
                             }
 
                             Button(
-                                onClick = { changeNameOftheParkingArea(name.toString(),parkingAreaId, context) },
+                                onClick = {
+                                    changeNameOftheParkingArea(
+                                        name.toString(),
+                                        parkingAreaId,
+                                        context
+                                    )
+                                },
                                 modifier = Modifier
                                     .height(56.dp) // Match text field height
                                     .align(Alignment.CenterVertically),
@@ -114,7 +122,7 @@ fun EditParkingArea(
 
                         Button(
                             onClick = {
-                                handleEditSlotsClick(parkingAreaId,context,navController);
+                                handleEditSlotsClick(parkingAreaId, context, navController);
                             },
                             modifier = Modifier
                                 .height(60.dp)
@@ -137,7 +145,13 @@ fun EditParkingArea(
                         Spacer(modifier = Modifier.height(20.dp)) // for horizontal spacing
 
                         Button(
-                            onClick = {handleEditUsersClick(parkingAreaId,context,navController)},
+                            onClick = {
+                                handleEditUsersClick(
+                                    parkingAreaId,
+                                    context,
+                                    navController
+                                )
+                            },
                             modifier = Modifier
                                 .height(60.dp)
                                 .fillMaxWidth(),
@@ -159,7 +173,13 @@ fun EditParkingArea(
                         Spacer(modifier = Modifier.height(20.dp)) // for horizontal spacing
 
                         Button(
-                            onClick = {},
+                            onClick = {
+                                getCurrentBookingByParkingArea(
+                                    Integer.parseInt(
+                                        parkingAreaId
+                                    ), navController, context
+                                )
+                            },
                             modifier = Modifier
                                 .height(60.dp)
                                 .fillMaxWidth(),
@@ -187,7 +207,7 @@ fun EditParkingArea(
                         .padding(bottom = 32.dp)
                 ) {
                     Button(
-                        onClick = {navController.navigate(Routes.homePage)},
+                        onClick = { navController.navigate(Routes.homePage) },
                         modifier = Modifier
                             .height(60.dp)
                             .fillMaxWidth(0.9f),
@@ -211,56 +231,103 @@ fun EditParkingArea(
     }
 }
 
+fun getCurrentBookingByParkingArea(
+    parkingAreaId: Int,
+    navController: NavController,
+    context: Context
+) {
+    try {
+        val bookedSlots: MutableList<BookingData> = mutableListOf()
+        val api = RetrofitService.getRetrofit().create(ParkingSlotApi::class.java)
 
-fun handleEditUsersClick( parkingAreaId: String?,context: Context,navController: NavController){
-    val api = RetrofitService.getRetrofit().create(ParkingSlotApi::class.java)
-    api.findParkingAreaById(parkingAreaId = Integer.parseInt(parkingAreaId)).enqueue(object : Callback<ParkingAreaResponse> {
-        override fun onResponse(call: Call<ParkingAreaResponse>, response: Response<ParkingAreaResponse>) {
-            if ( response.body()!=null) {
-                if(response.body()?.status==0){
-                    val gson = Gson()
-                    val json = Uri.encode(gson.toJson(response.body()?.data))
-                    navController.navigate(Routes.editUsers + "/$json")
-                }else{
-                    Toast.makeText(context, "Data not found ", Toast.LENGTH_SHORT).show()
+        api.getBookingByParkingArea(parkingAreaId)
+            .enqueue(object : Callback<BookingResponse> {
+                override fun onResponse(
+                    call: Call<BookingResponse>,
+                    response: Response<BookingResponse>
+                ) {
+                    if (response.isSuccessful && response.body() != null) {
+                        if (response.body()?.status == 0) {
+                            response.body()?.data?.let { bookedSlots.addAll(it) }
+                            val json = Uri.encode(Gson().toJson(bookedSlots))
+                            navController.navigate("${Routes.editBooking}/$json/$parkingAreaId")
+                        } else {
+                            val json = Uri.encode(Gson().toJson(emptyList<BookingData>()))
+                            navController.navigate(Routes.editBooking + "/$json/" + parkingAreaId)
+                        }
+                    } else {
+                        Toast.makeText(context, "Failed to find data", Toast.LENGTH_SHORT).show()
+                    }
                 }
-            } else {
-                Toast.makeText(context, "Data not found", Toast.LENGTH_SHORT).show()
-            }
-        }
 
-        override fun onFailure(call: Call<ParkingAreaResponse>, t: Throwable) {
-            Toast.makeText(context, "Error: ${t.message}", Toast.LENGTH_SHORT).show()
-        }
-    })
-}
-
-fun handleEditSlotsClick( parkingAreaId: String?,context: Context,navController: NavController){
-    val api = RetrofitService.getRetrofit().create(ParkingSlotApi::class.java)
-    api.findParkingAreaById(parkingAreaId = Integer.parseInt(parkingAreaId)).enqueue(object : Callback<ParkingAreaResponse> {
-        override fun onResponse(call: Call<ParkingAreaResponse>, response: Response<ParkingAreaResponse>) {
-            if ( response.body()!=null) {
-                if(response.body()?.status==0){
-                    val gson = Gson()
-                    val json = Uri.encode(gson.toJson(response.body()?.data))
-                    navController.navigate(Routes.editSlots + "/$json")
-                }else{
-                    Toast.makeText(context, "Data not found ", Toast.LENGTH_SHORT).show()
+                override fun onFailure(call: Call<BookingResponse>, t: Throwable) {
+                    Toast.makeText(context, "Error: ${t.message}", Toast.LENGTH_SHORT).show()
                 }
-            } else {
-                Toast.makeText(context, "Data not found", Toast.LENGTH_SHORT).show()
-            }
-        }
+            })
 
-        override fun onFailure(call: Call<ParkingAreaResponse>, t: Throwable) {
-            Toast.makeText(context, "Error: ${t.message}", Toast.LENGTH_SHORT).show()
-        }
-    })
+
+    } catch (e: Exception) {
+        Toast.makeText(context, "Exception occurred: ${e.message}", Toast.LENGTH_SHORT).show()
+    }
 }
 
 
+fun handleEditUsersClick(parkingAreaId: String?, context: Context, navController: NavController) {
+    val api = RetrofitService.getRetrofit().create(ParkingSlotApi::class.java)
+    api.findParkingAreaById(parkingAreaId = Integer.parseInt(parkingAreaId))
+        .enqueue(object : Callback<ParkingAreaResponse> {
+            override fun onResponse(
+                call: Call<ParkingAreaResponse>,
+                response: Response<ParkingAreaResponse>
+            ) {
+                if (response.body() != null) {
+                    if (response.body()?.status == 0) {
+                        val gson = Gson()
+                        val json = Uri.encode(gson.toJson(response.body()?.data))
+                        navController.navigate(Routes.editUsers + "/$json")
+                    } else {
+                        Toast.makeText(context, "Data not found ", Toast.LENGTH_SHORT).show()
+                    }
+                } else {
+                    Toast.makeText(context, "Data not found", Toast.LENGTH_SHORT).show()
+                }
+            }
 
-fun changeNameOftheParkingArea(name:String, parkingAreaId: String?, context:Context){
+            override fun onFailure(call: Call<ParkingAreaResponse>, t: Throwable) {
+                Toast.makeText(context, "Error: ${t.message}", Toast.LENGTH_SHORT).show()
+            }
+        })
+}
+
+fun handleEditSlotsClick(parkingAreaId: String?, context: Context, navController: NavController) {
+    val api = RetrofitService.getRetrofit().create(ParkingSlotApi::class.java)
+    api.findParkingAreaById(parkingAreaId = Integer.parseInt(parkingAreaId))
+        .enqueue(object : Callback<ParkingAreaResponse> {
+            override fun onResponse(
+                call: Call<ParkingAreaResponse>,
+                response: Response<ParkingAreaResponse>
+            ) {
+                if (response.body() != null) {
+                    if (response.body()?.status == 0) {
+                        val gson = Gson()
+                        val json = Uri.encode(gson.toJson(response.body()?.data))
+                        navController.navigate(Routes.editSlots + "/$json")
+                    } else {
+                        Toast.makeText(context, "Data not found ", Toast.LENGTH_SHORT).show()
+                    }
+                } else {
+                    Toast.makeText(context, "Data not found", Toast.LENGTH_SHORT).show()
+                }
+            }
+
+            override fun onFailure(call: Call<ParkingAreaResponse>, t: Throwable) {
+                Toast.makeText(context, "Error: ${t.message}", Toast.LENGTH_SHORT).show()
+            }
+        })
+}
+
+
+fun changeNameOftheParkingArea(name: String, parkingAreaId: String?, context: Context) {
 
     // Safely handle the parkingAreaId to prevent crashes from a null or invalid value.
     val id: Int? = parkingAreaId?.toIntOrNull()
@@ -272,30 +339,30 @@ fun changeNameOftheParkingArea(name:String, parkingAreaId: String?, context:Cont
 
     val api = RetrofitService.getRetrofit().create(ParkingSlotApi::class.java)
 
-    api.updateParkingAreaName(id = id, newName = name).enqueue(object : Callback<ParkingAreaResponse> {
-        override fun onResponse(
-            call: Call<ParkingAreaResponse>,
-            response: Response<ParkingAreaResponse>
-        ) {
-            if (response.isSuccessful) {
-                val body = response.body()
-                if (body != null && body.status == 0) {
-                    Toast.makeText(context, "Updated", Toast.LENGTH_SHORT).show()
+    api.updateParkingAreaName(id = id, newName = name)
+        .enqueue(object : Callback<ParkingAreaResponse> {
+            override fun onResponse(
+                call: Call<ParkingAreaResponse>,
+                response: Response<ParkingAreaResponse>
+            ) {
+                if (response.isSuccessful) {
+                    val body = response.body()
+                    if (body != null && body.status == 0) {
+                        Toast.makeText(context, "Updated", Toast.LENGTH_SHORT).show()
+                    } else {
+                        Toast.makeText(context, "" + body?.message, Toast.LENGTH_SHORT).show()
+                    }
                 } else {
-                    Toast.makeText(context, "" + body?.message, Toast.LENGTH_SHORT).show()
+                    Toast.makeText(context, "API Error: ${response.code()}", Toast.LENGTH_SHORT)
+                        .show()
                 }
-            } else {
-                Toast.makeText(context, "API Error: ${response.code()}", Toast.LENGTH_SHORT).show()
             }
-        }
 
-        override fun onFailure(call: Call<ParkingAreaResponse>, t: Throwable) {
-            Toast.makeText(context, "Error: ${t.message}", Toast.LENGTH_SHORT).show()
-        }
-    })
+            override fun onFailure(call: Call<ParkingAreaResponse>, t: Throwable) {
+                Toast.makeText(context, "Error: ${t.message}", Toast.LENGTH_SHORT).show()
+            }
+        })
 }
-
-
 
 
 @Preview(showBackground = true)

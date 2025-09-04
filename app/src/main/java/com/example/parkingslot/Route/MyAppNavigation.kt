@@ -1,6 +1,7 @@
 package com.example.parkingslot.Route
 
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
@@ -12,6 +13,7 @@ import com.example.parkingslot.mainpages.ParkingArea.AddSlotsToParkingArea
 import com.example.parkingslot.mainpages.ParkingArea.AddUsersToParkingArea
 import com.example.parkingslot.mainpages.ParkingArea.AssignSlotForUsers
 import com.example.parkingslot.mainpages.ParkingArea.CreateParkingArea
+import com.example.parkingslot.mainpages.ParkingArea.EditBooking
 import com.example.parkingslot.mainpages.ParkingArea.EditParkingArea
 import com.example.parkingslot.mainpages.ParkingArea.EditSlots
 import com.example.parkingslot.mainpages.ParkingArea.EditUsers
@@ -208,6 +210,19 @@ fun MyAppNavigation() {
                     month = month,
                     navController = navController,
                     parkingAreaId = parkingAreaId
+                )
+            }
+
+            composable("${Routes.editBooking}/{bookingData}/{parkingAreaId}") { backStackEntry ->
+                val json = backStackEntry.arguments?.getString("bookingData")
+                val bookedSlots = Gson().fromJson(json, Array<BookingData>::class.java).toList()
+                val parkingAreaId = backStackEntry.arguments?.getString("parkingAreaId")?.toInt() ?: 0
+
+                EditBooking(
+                    parkingAreaId = parkingAreaId,
+                    navController = navController,
+                    modifier = Modifier,
+                    bookingDataList = bookedSlots
                 )
             }
 

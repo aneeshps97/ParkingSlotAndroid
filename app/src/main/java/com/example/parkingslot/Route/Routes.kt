@@ -27,4 +27,6 @@ object Routes {
     var editSlots = "EditSlots"
 
     var editUsers = "EditUsers"
+
+    var editBooking ="EditBooking"
 }

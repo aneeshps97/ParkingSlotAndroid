@@ -41,6 +41,11 @@ interface ParkingSlotApi {
         @Query(value = "parkingAreaId") pId:Int,
     ): Call <BookingResponse>
 
+    @GET("parkingslot/booking/parkingArea")
+    fun getBookingByParkingArea(
+        @Query(value = "parkingAreaId") parkingAreaId:Int,
+    ): Call <BookingResponse>
+
     @GET("parkingslot/booking/getFreeSlots")
     fun getFreeSlotsInParkingArea(
         @Query(value = "parkingAreaId") parkingAreaId:Int
@@ -97,6 +102,11 @@ interface ParkingSlotApi {
     fun deleteSlot(
         @Path("slotId") slotId: Int,
     ): Call<SlotDataResponse>
+
+    @DELETE("/parkingslot/booking/removeBooking")
+    fun removeBooking(
+        @Query("bookingId") bookingId: Int,
+    ): Call<BookingResponse>
 
     @PUT("/parkingslot/parkingArea/removeUserFromParkingArea/{parkingAreaId}")
     fun removeUserFromParkingArea(

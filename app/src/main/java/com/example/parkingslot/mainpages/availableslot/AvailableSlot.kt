@@ -1,7 +1,9 @@
 package com.example.parkingslot.mainpages.availableslot
 
 import android.content.Context
+import android.net.Uri
 import android.widget.Toast
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Box
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -16,10 +18,12 @@ import com.example.parkingslot.Route.Routes
 import com.example.parkingslot.mainpages.background.PageBackground
 import com.example.parkingslot.customresuables.calender.Calender
 import com.example.parkingslot.customresuables.confirm.ConfirmPopUp
+import com.example.parkingslot.mainpages.ParkingArea.getFreeSlotsInParkingArea
 import com.example.parkingslot.webConnect.dto.booking.BookingData
 import com.example.parkingslot.webConnect.dto.booking.BookingResponse
 import com.example.parkingslot.webConnect.retrofit.ParkingSlotApi
 import com.example.parkingslot.webConnect.retrofit.RetrofitService
+import com.google.gson.Gson
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
@@ -44,7 +48,9 @@ fun AvailableSlot(
     val sharedPref = remember { context.getSharedPreferences("loginPref", Context.MODE_PRIVATE) }
     val userId = sharedPref.getInt("user_id",1)
     PageBackground() {
-
+        BackHandler {
+            navController.navigate(Routes.homePage)
+        }
         ConfirmPopUp(
             showDialog = showConfirmationDialog,
             onDismiss = { showConfirmationDialog = false },
@@ -56,6 +62,12 @@ fun AvailableSlot(
                         if ( response.body()!=null) {
                             if(response.body()?.status==0){
                                 Toast.makeText(context, "Slot Booked", Toast.LENGTH_SHORT).show()
+                                getFreeSlotsInParkingArea(
+                                    userId = userId,
+                                    parkingAreaId = Integer.parseInt(parkingAreaId),
+                                    navController = navController,
+                                    context = context
+                                )
                             }else{
                                 Toast.makeText(context, "Failed", Toast.LENGTH_SHORT).show()
                             }
@@ -65,7 +77,7 @@ fun AvailableSlot(
                     }
 
                     override fun onFailure(call: Call<BookingResponse>, t: Throwable) {
-                        //Toast.makeText(context, "Error: ${t.message}", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(context, "Error: ${t.message}", Toast.LENGTH_SHORT).show()
                     }
                  }
 
@@ -90,3 +102,4 @@ fun AvailableSlot(
         }
     }
 }
+
