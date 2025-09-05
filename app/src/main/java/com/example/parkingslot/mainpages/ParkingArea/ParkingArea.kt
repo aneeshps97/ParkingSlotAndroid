@@ -22,6 +22,8 @@ import com.example.parkingslot.customresuables.confirm.ConfirmPopUp
 import com.example.parkingslot.webConnect.dto.booking.BookingData
 import com.example.parkingslot.webConnect.dto.booking.BookingResponse
 import com.example.parkingslot.webConnect.dto.parkingArea.ParkingAreaResponse
+import com.example.parkingslot.webConnect.repository.BookingRepository
+import com.example.parkingslot.webConnect.repository.ParkingAreaRepository
 import com.example.parkingslot.webConnect.retrofit.ParkingSlotApi
 import com.example.parkingslot.webConnect.retrofit.RetrofitService
 import com.google.gson.Gson
@@ -41,6 +43,8 @@ fun parkingArea(
     val sharedPref = remember { context.getSharedPreferences("loginPref", Context.MODE_PRIVATE) }
     val userId = sharedPref.getInt("user_id", 1)
     var showConfirmationDialog by remember { mutableStateOf(false) }
+    var bookingRepository = BookingRepository()
+    var parkingAreaRepository = ParkingAreaRepository()
 
     PageBackground {
         Box(modifier = Modifier.fillMaxSize()) {
@@ -67,29 +71,31 @@ fun parkingArea(
                 ) {
                     DashboardButton("View Ticket") {
                         val today = LocalDate.now().toString()
-                        val currentBookingData: BookingResponse? =
-                            getBookingByUserParkingAndDate(
+
+                        handleBookingCheckForToday(
                                 parkingAreaId = parkingAreaId.toInt(),
                                 context = context,
-                                date = today,
                                 userId = userId,
-                                navController = navController
+                                navController = navController,
+                                repository = bookingRepository
                             )
                     }
                     DashboardButton("Available Slots") {
-                        getFreeSlotsInParkingArea(
+                        handleGetFreeSlotsInParkingArea(
                             userId = userId,
                             parkingAreaId = Integer.parseInt(parkingAreaId),
                             navController = navController,
-                            context = context
+                            context = context,
+                            repository = parkingAreaRepository
                         )
                     }
                     DashboardButton("My Bookings") {
-                        getCurrentBookingOfUser(
+                        handleGetCurrentBookingOfUser(
                             userId = userId,
                             parkingAreaId = Integer.parseInt(parkingAreaId),
                             navController = navController,
-                            context = context
+                            context = context,
+                            repository = bookingRepository
                         )
                     }
                     if(userId.toString().equals(adminId.toString())){
@@ -142,122 +148,95 @@ fun handleDeleteParkingArea(parkingAreaId: Int,context: Context,navController: N
     }
 }
 
-fun getFreeSlotsInParkingArea(
+fun handleGetFreeSlotsInParkingArea(
     userId: Int,
     parkingAreaId: Int,
     navController: NavController,
-    context: Context
-) {
-    try {
-        val bookedSlots: MutableList<BookingData> = mutableListOf()
-        val api = RetrofitService.getRetrofit().create(ParkingSlotApi::class.java)
-        api.getFreeSlotsInParkingArea(parkingAreaId)
-            .enqueue(object : Callback<BookingResponse> {
-                override fun onResponse(
-                    call: Call<BookingResponse>,
-                    response: Response<BookingResponse>
-                ) {
-                    if (response.isSuccessful && response.body() != null) {
-                        if (response.body()?.status == 0) {
-                            response.body()?.data?.let { bookedSlots.addAll(it) }
-                            val json = Uri.encode(Gson().toJson(bookedSlots))
-                            navController.navigate(Routes.availableSlots + "/$json/" + parkingAreaId)
-                        } else {
-                            val json = Uri.encode(Gson().toJson(emptyList<BookingData>()))
-                            navController.navigate(Routes.availableSlots + "/$json/" + parkingAreaId)
-                            Toast.makeText(context, "No free slots available", Toast.LENGTH_SHORT)
-                                .show()
-                        }
-                    } else {
-                        Toast.makeText(context, "Failed to find data", Toast.LENGTH_SHORT).show()
-                    }
-                }
-
-                override fun onFailure(call: Call<BookingResponse>, t: Throwable) {
-                    Toast.makeText(context, "Error: ${t.message}", Toast.LENGTH_SHORT).show()
-                }
-            })
-    } catch (e: Exception) {
-        Toast.makeText(context, "Exception occurred: ${e.message}", Toast.LENGTH_SHORT).show()
-    }
-}
-
-fun getCurrentBookingOfUser(
-    userId: Int,
-    parkingAreaId: Int,
-    navController: NavController,
-    context: Context
-) {
-    try {
-        val bookedSlots: MutableList<BookingData> = mutableListOf()
-        val api = RetrofitService.getRetrofit().create(ParkingSlotApi::class.java)
-
-        api.getBookingByUserForParkingArea(userId, parkingAreaId)
-            .enqueue(object : Callback<BookingResponse> {
-                override fun onResponse(
-                    call: Call<BookingResponse>,
-                    response: Response<BookingResponse>
-                ) {
-                    if (response.isSuccessful && response.body() != null) {
-                        if (response.body()?.status == 0) {
-                            response.body()?.data?.let { bookedSlots.addAll(it) }
-                            val json = Uri.encode(Gson().toJson(bookedSlots))
-                            navController.navigate(Routes.myBookings + "/$json/" + parkingAreaId)
-                        } else {
-                            val json = Uri.encode(Gson().toJson(emptyList<BookingData>()))
-                            navController.navigate(Routes.myBookings + "/$json/" + parkingAreaId)
-                            Toast.makeText(context, "No booked slots", Toast.LENGTH_SHORT).show()
-                        }
-                    } else {
-                        Toast.makeText(context, "Failed to find data", Toast.LENGTH_SHORT).show()
-                    }
-                }
-
-                override fun onFailure(call: Call<BookingResponse>, t: Throwable) {
-                    Toast.makeText(context, "Error: ${t.message}", Toast.LENGTH_SHORT).show()
-                }
-            })
-    } catch (e: Exception) {
-        Toast.makeText(context, "Exception occurred: ${e.message}", Toast.LENGTH_SHORT).show()
-    }
-}
-
-fun getBookingByUserParkingAndDate(
-    parkingAreaId: Int,
     context: Context,
-    date: String,
-    userId: Int,
-    navController: NavController
-): BookingResponse? {
-    val bookingResponse: BookingResponse? = null
-    val api = RetrofitService.getRetrofit().create(ParkingSlotApi::class.java)
-    val today = LocalDate.now().toString()
-    api.getBookingByUserParkingAndDate(userId, Integer.valueOf(parkingAreaId), date = today)
-        .enqueue(object : Callback<BookingResponse> {
-            override fun onResponse(
-                call: Call<BookingResponse>,
-                response: Response<BookingResponse>
-            ) {
-                if (response.body() != null) {
-                    val slotName = response.body()?.data?.get(0)?.slot?.name
-                    if(slotName!=null){
-                        navController.navigate(Routes.parkingTicket + "/" + slotName)
-                    }else{
-                        Toast.makeText(context, "No Booking for today", Toast.LENGTH_SHORT).show()
-                    }
-
-                } else {
-
-                }
+    repository: ParkingAreaRepository
+) {
+    try {
+        repository.getFreeSlotsInParkingArea(parkingAreaId) { result ->
+            result.onSuccess { bookingResponse ->
+                val bookedSlots = bookingResponse.data ?: emptyList()
+                val json = Uri.encode(Gson().toJson(bookedSlots))
+                navController.navigate("${Routes.availableSlots}/$json/$parkingAreaId")
             }
-
-            override fun onFailure(call: Call<BookingResponse>, t: Throwable) {
-                Toast.makeText(context, "Error: ${t.message}", Toast.LENGTH_SHORT).show()
+            result.onFailure { error ->
+                val emptyJson = Uri.encode(Gson().toJson(emptyList<BookingData>()))
+                navController.navigate("${Routes.availableSlots}/$emptyJson/$parkingAreaId")
+                Toast.makeText(
+                    context,
+                    error.message ?: "Failed to fetch free slots",
+                    Toast.LENGTH_SHORT
+                ).show()
             }
-        })
-
-    return bookingResponse
+        }
+    } catch (e: Exception) {
+        Toast.makeText(context, "Exception occurred: ${e.message}", Toast.LENGTH_SHORT).show()
+    }
 }
+
+
+fun handleGetCurrentBookingOfUser(
+    context: Context,
+    userId: Int,
+    parkingAreaId: Int,
+    navController: NavController,
+    repository: BookingRepository
+) {
+    repository.getCurrentBookingOfUserRepository(userId, parkingAreaId) { result ->
+        result.onSuccess { bookedSlots ->
+            val json = Uri.encode(Gson().toJson(bookedSlots))
+            navController.navigate(Routes.myBookings + "/$json/$parkingAreaId")
+
+            if (bookedSlots.isEmpty()) {
+                Toast.makeText(context, "No booked slots", Toast.LENGTH_SHORT).show()
+            }
+        }
+        result.onFailure { error ->
+            val json = Uri.encode(Gson().toJson(emptyList<BookingData>()))
+            navController.navigate(Routes.myBookings + "/$json/$parkingAreaId")
+            Toast.makeText(
+                context,
+                error.message ?: "Failed to find data",
+                Toast.LENGTH_SHORT
+            ).show()
+        }
+    }
+}
+
+fun handleBookingCheckForToday(
+    context: Context,
+    userId: Int,
+    parkingAreaId: Int,
+    navController: NavController,
+    repository: BookingRepository
+) {
+    val today = LocalDate.now().toString()
+
+    repository.getBookingByUserParkingAndDate(userId, parkingAreaId, today) { result ->
+        result.onSuccess { response ->
+            val slotName = response.data?.firstOrNull()?.slot?.name
+            if (slotName != null) {
+                navController.navigate("${Routes.parkingTicket}/$slotName")
+            } else {
+                Toast.makeText(context, "No Booking for today", Toast.LENGTH_SHORT).show()
+            }
+        }
+
+        result.onFailure { error ->
+            Toast.makeText(
+                context,
+                error.message ?: "Failed to fetch booking",
+                Toast.LENGTH_SHORT
+            ).show()
+        }
+    }
+}
+
+
+
 
 @Composable
 fun DashboardButton(text: String, onClick: () -> Unit = {}) {

@@ -31,6 +31,7 @@ import com.example.parkingslot.customresuables.textfields.LabeledTextField
 import com.example.parkingslot.mainpages.background.PageBackground
 import com.example.parkingslot.webConnect.dto.login.LoginRequest
 import com.example.parkingslot.webConnect.dto.login.LoginResponse
+import com.example.parkingslot.webConnect.repository.UserRepository
 import com.example.parkingslot.webConnect.retrofit.ParkingSlotApi
 import com.example.parkingslot.webConnect.retrofit.RetrofitService
 import org.json.JSONObject
@@ -43,6 +44,7 @@ fun Login(navController: NavController) {
     val context = LocalContext.current
     val sharedPref = remember { context.getSharedPreferences("loginPref", Context.MODE_PRIVATE) }
     val isLoggedIn = sharedPref.getBoolean("isLoggedIn", false)
+    val userRepository = UserRepository()
 
     LaunchedEffect(isLoggedIn) {
         if (isLoggedIn) {
@@ -52,7 +54,22 @@ fun Login(navController: NavController) {
 
     LoginScreen(
         onLoginClick = { email, password ->
-            handleLogin(email, password, navController, sharedPref, context)
+            userRepository.login(email, password) { result ->
+                result.onSuccess { response ->
+                    val data = response.data
+                    with(sharedPref.edit()) {
+                        putBoolean("isLoggedIn", true)
+                        putString("user_token", data.userToken)
+                        putInt("user_id", data.userId)
+                        putString("name", data.name)
+                        apply()
+                    }
+                    navController.navigate(Routes.homePage)
+                }
+                result.onFailure { error ->
+                    Toast.makeText(context, error.message ?: "Login failed", Toast.LENGTH_SHORT).show()
+                }
+            }
         },
         onSignUpClick = {
             navController.navigate(Routes.signup)
@@ -112,38 +129,3 @@ fun LoginScreen(
 }
 
 
-private fun handleLogin(
-    email: String,
-    password: String,
-    navController: NavController,
-    sharedPref: SharedPreferences,
-    context: Context
-) {
-    val api = RetrofitService.getRetrofit().create(ParkingSlotApi::class.java)
-    val loginRequest = LoginRequest(email = email, password = password)
-
-    api.login(loginRequest).enqueue(object : Callback<LoginResponse> {
-        override fun onResponse(call: Call<LoginResponse>, response: Response<LoginResponse>) {
-            val responseBody = response.body()
-            val data = responseBody?.data
-            if (responseBody?.status == 0 && data != null) {
-                with(sharedPref.edit()) {
-                    putBoolean("isLoggedIn", true)
-                    putString("user_token", data.userToken)
-                    putInt("user_id", data.userId ?: 0)
-                    putString("name", data.name)
-                    apply()
-                }
-                navController.navigate(Routes.homePage)
-            } else {
-                val errorBody = response.errorBody()?.string()
-                val errorMessage = errorBody?.let { JSONObject(it).getString("message") }
-                Toast.makeText(context, errorMessage ?: "Login failed", Toast.LENGTH_SHORT).show()
-            }
-        }
-
-        override fun onFailure(call: Call<LoginResponse>, t: Throwable) {
-            Toast.makeText(context, "Error: ${t.message}", Toast.LENGTH_SHORT).show()
-        }
-    })
-}

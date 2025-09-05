@@ -18,9 +18,10 @@ import com.example.parkingslot.Route.Routes
 import com.example.parkingslot.mainpages.background.PageBackground
 import com.example.parkingslot.customresuables.calender.Calender
 import com.example.parkingslot.customresuables.confirm.ConfirmPopUp
-import com.example.parkingslot.mainpages.ParkingArea.getFreeSlotsInParkingArea
+import com.example.parkingslot.mainpages.ParkingArea.handleGetFreeSlotsInParkingArea
 import com.example.parkingslot.webConnect.dto.booking.BookingData
 import com.example.parkingslot.webConnect.dto.booking.BookingResponse
+import com.example.parkingslot.webConnect.repository.ParkingAreaRepository
 import com.example.parkingslot.webConnect.retrofit.ParkingSlotApi
 import com.example.parkingslot.webConnect.retrofit.RetrofitService
 import com.google.gson.Gson
@@ -47,6 +48,7 @@ fun AvailableSlot(
     var dateSelected:String=formattedDate
     val sharedPref = remember { context.getSharedPreferences("loginPref", Context.MODE_PRIVATE) }
     val userId = sharedPref.getInt("user_id",1)
+    var parkingAreaRepository = ParkingAreaRepository()
     PageBackground() {
         BackHandler {
             navController.navigate(Routes.homePage)
@@ -55,33 +57,17 @@ fun AvailableSlot(
             showDialog = showConfirmationDialog,
             onDismiss = { showConfirmationDialog = false },
             onConfirm = {
-                val matchedId = bookingData.find {it.date == dateSelected }?.bookingId
-                 val api = RetrofitService.getRetrofit().create(ParkingSlotApi::class.java)
-                api.bookSlotForUser(userId=userId,bookingId = matchedId as Int?).enqueue(object : Callback<BookingResponse> {
-                    override fun onResponse(call: Call<BookingResponse>, response: Response<BookingResponse>) {
-                        if ( response.body()!=null) {
-                            if(response.body()?.status==0){
-                                Toast.makeText(context, "Slot Booked", Toast.LENGTH_SHORT).show()
-                                getFreeSlotsInParkingArea(
-                                    userId = userId,
-                                    parkingAreaId = Integer.parseInt(parkingAreaId),
-                                    navController = navController,
-                                    context = context
-                                )
-                            }else{
-                                Toast.makeText(context, "Failed", Toast.LENGTH_SHORT).show()
-                            }
-                        } else {
-                            Toast.makeText(context, "Failed", Toast.LENGTH_SHORT).show()
-                        }
-                    }
+                handleSlotBooking(
+                    bookingData = bookingData,
+                    dateSelected = dateSelected,
+                    userId = userId,
+                    parkingAreaId = parkingAreaId.toString(),
+                    navController = navController,
+                    context = context,
+                    onBookingCompleted = {showConfirmationDialog = false},
+                    repository = parkingAreaRepository
+                )
 
-                    override fun onFailure(call: Call<BookingResponse>, t: Throwable) {
-                        Toast.makeText(context, "Error: ${t.message}", Toast.LENGTH_SHORT).show()
-                    }
-                 }
-
-                 )
                 showConfirmationDialog = false
             }
         )
@@ -103,3 +89,41 @@ fun AvailableSlot(
     }
 }
 
+fun handleSlotBooking(
+    bookingData: List<BookingData>,
+    dateSelected: String,
+    userId: Int,
+    parkingAreaId: String,
+    navController: NavController,
+    context: Context,
+    onBookingCompleted: () -> Unit,
+    repository: ParkingAreaRepository
+) {
+    val matchedId = bookingData.find { it.date == dateSelected }?.bookingId
+
+    if (matchedId == null) {
+        Toast.makeText(context, "No booking available for selected date", Toast.LENGTH_SHORT).show()
+        return
+    }
+
+    repository.bookSlotForUser(userId, matchedId) { result ->
+        result.onSuccess {
+            Toast.makeText(context, "Slot Booked", Toast.LENGTH_SHORT).show()
+            handleGetFreeSlotsInParkingArea(
+                userId = userId,
+                parkingAreaId = Integer.parseInt(parkingAreaId),
+                navController = navController,
+                context = context,
+                repository = repository
+            )
+            onBookingCompleted() // e.g. close confirmation dialog
+        }
+        result.onFailure { error ->
+            Toast.makeText(
+                context,
+                error.message ?: "Failed to book slot",
+                Toast.LENGTH_SHORT
+            ).show()
+        }
+    }
+}

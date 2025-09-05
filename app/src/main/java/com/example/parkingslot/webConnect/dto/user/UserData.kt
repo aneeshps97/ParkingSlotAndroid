@@ -9,4 +9,15 @@ data class UserData(
     val password: String,
     val userToken: String,
     val parkingAreas: List<ParkingAreaData>
-)
+) {
+    companion object {
+        val EMPTY = UserData(
+            userId = 0,
+            name = "",
+            email = "",
+            password = "",
+            userToken = "",
+            parkingAreas = emptyList()
+        )
+    }
+}

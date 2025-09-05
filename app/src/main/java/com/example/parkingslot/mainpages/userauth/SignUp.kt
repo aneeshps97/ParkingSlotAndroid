@@ -30,6 +30,7 @@ import com.example.parkingslot.customresuables.textfields.LabeledTextField
 import com.example.parkingslot.mainpages.background.PageBackground
 import com.example.parkingslot.webConnect.dto.signup.SignUpRequest
 import com.example.parkingslot.webConnect.dto.signup.SignUpResponse
+import com.example.parkingslot.webConnect.repository.UserRepository
 import com.example.parkingslot.webConnect.retrofit.ParkingSlotApi
 import com.example.parkingslot.webConnect.retrofit.RetrofitService
 import org.json.JSONObject
@@ -46,6 +47,7 @@ fun SignUp(navController: NavController) {
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var confirmPassword by remember { mutableStateOf("") }
+    val userRepository = UserRepository()
 
     val isValidationSuccess by remember {
         derivedStateOf {
@@ -87,7 +89,27 @@ fun SignUp(navController: NavController) {
             )
             Spacer(modifier = Modifier.height(24.dp))
 
-            ForwardButton(isEnabled = isValidationSuccess,onClick={ handleSignUp(context, sharedPref, navController, name, email, password)})
+            ForwardButton(
+                isEnabled = isValidationSuccess,
+                onClick = {
+                    userRepository.signUp(name, email, password) { result ->
+                        result.onSuccess { response ->
+                            val data = response.data
+                            with(sharedPref.edit()) {
+                                putBoolean("isLoggedIn", true)
+                                putString("user_token", data.userToken)
+                                putInt("user_id", data.userId)
+                                putString("name", data.name)
+                                apply()
+                            }
+                            navController.navigate(Routes.homePage)
+                        }
+                        result.onFailure { error ->
+                            Toast.makeText(context, error.message ?: "Signup failed", Toast.LENGTH_SHORT).show()
+                        }
+                    }
+                }
+            )
             Spacer(modifier = Modifier.height(90.dp))
 
             Text(
@@ -101,41 +123,3 @@ fun SignUp(navController: NavController) {
         }
     }
 }
-
-fun handleSignUp(
-    context: Context,
-    sharedPref: SharedPreferences,
-    navController: NavController,
-    name: String,
-    email: String,
-    password: String
-) {
-    val api = RetrofitService.getRetrofit().create(ParkingSlotApi::class.java)
-    val signUpRequest = SignUpRequest(name = name, email = email, password = password)
-
-    api.signUp(signUpRequest).enqueue(object : Callback<SignUpResponse> {
-        override fun onResponse(call: Call<SignUpResponse>, response: Response<SignUpResponse>) {
-            val responseBody = response.body()
-            val data = responseBody?.data
-            if (responseBody?.status == 0 && data != null) {
-                with(sharedPref.edit()) {
-                    putBoolean("isLoggedIn", true)
-                    putString("user_token", data.userToken)
-                    putInt("user_id", data.userId ?: 0)
-                    putString("name", data.name)
-                    apply()
-                }
-                navController.navigate(Routes.homePage)
-            } else {
-                val errorBody = response.errorBody()?.string()
-                val errorMessage = errorBody?.let { JSONObject(it).getString("message") }
-                Toast.makeText(context, errorMessage, Toast.LENGTH_SHORT).show()
-            }
-        }
-
-        override fun onFailure(call: Call<SignUpResponse>, t: Throwable) {
-            Toast.makeText(context, "Error: ${t.message}", Toast.LENGTH_SHORT).show()
-        }
-    })
-}
-

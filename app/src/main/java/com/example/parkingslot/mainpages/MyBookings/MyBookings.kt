@@ -19,11 +19,13 @@ import com.example.parkingslot.customresuables.calender.Calender
 import com.example.parkingslot.customresuables.confirm.ConfirmPopUp
 import com.example.parkingslot.customresuables.popUp.TransferOrReleasePopup
 import com.example.parkingslot.customresuables.popUp.TransferUserListPopUp
-import com.example.parkingslot.mainpages.ParkingArea.getCurrentBookingOfUser
+import com.example.parkingslot.mainpages.ParkingArea.handleGetCurrentBookingOfUser
 import com.example.parkingslot.webConnect.dto.booking.BookingData
 import com.example.parkingslot.webConnect.dto.booking.BookingResponse
 import com.example.parkingslot.webConnect.dto.parkingArea.ParkingAreaResponse
 import com.example.parkingslot.webConnect.dto.user.User
+import com.example.parkingslot.webConnect.repository.BookingRepository
+import com.example.parkingslot.webConnect.repository.ParkingAreaRepository
 import com.example.parkingslot.webConnect.retrofit.ParkingSlotApi
 import com.example.parkingslot.webConnect.retrofit.RetrofitService
 import retrofit2.Call
@@ -49,6 +51,8 @@ fun myBookings(
     val userId = sharedPref.getInt("user_id",1)
     var userList: MutableList<User> = mutableListOf()
     var selectedUserIdForTransfer: Int=0
+    var parkingAreaRepository: ParkingAreaRepository = ParkingAreaRepository()
+    var bookingRespository = BookingRepository()
     PageBackground() {
         BackHandler {
             navController.navigate(Routes.homePage)
@@ -58,7 +62,7 @@ fun myBookings(
             onDismiss = { showDialog = false },
             onTransfer = {
                 showDialog = false
-                buildUserData(parkingAreaId,userList,context,{showTransferDialog = true})
+                buildUserData(parkingAreaId.toString(),userList,context,parkingAreaRepository,{showTransferDialog = true})
             },
             onRelease = {
                 showDialog = false
@@ -84,30 +88,18 @@ fun myBookings(
             showDialog = showConfirmationDialogForTransferingSlot,
             onDismiss = { showConfirmationDialogForTransferingSlot = false },
             onConfirm = {
-                val matchedId = bookingData.find { it.date == dateSelected }?.bookingId
-                val api = RetrofitService.getRetrofit().create(ParkingSlotApi::class.java)
-                api.bookSlotForUser(userId = selectedUserIdForTransfer, bookingId = matchedId as Int?)
-                    .enqueue(object : Callback<BookingResponse> {
-                        override fun onResponse(
-                            call: Call<BookingResponse>, response: Response<BookingResponse>
-                        ) {
-                            if (response.body() != null) {
-                                if (response.body()?.status == 0) {
-                                    Toast.makeText(context, "Slot reallocated", Toast.LENGTH_SHORT)
-                                        .show()
-                                    showTransferDialog = false
-                                } else {
-                                    Toast.makeText(context, "Failed", Toast.LENGTH_SHORT).show()
-                                }
-                            } else {
-                                Toast.makeText(context, "Failed", Toast.LENGTH_SHORT).show()
-                            }
-                        }
 
-                        override fun onFailure(call: Call<BookingResponse>, t: Throwable) {
-                            //Toast.makeText(context, "Error: ${t.message}", Toast.LENGTH_SHORT).show()
-                        }
-                    })
+                handleSlotTransfer(
+                    bookingData = bookingData,
+                    dateSelected = dateSelected,
+                    selectedUserIdForTransfer = selectedUserIdForTransfer,
+                    context = context,
+                    onTransferCompleted = {
+                        showConfirmationDialogForTransferingSlot = false
+                    },
+                    repository = parkingAreaRepository
+                )
+
                 showConfirmationDialogForTransferingSlot = false
             },
             "TransferSlot",
@@ -118,28 +110,16 @@ fun myBookings(
             showDialog = showConfirmationDialog,
             onDismiss = { showConfirmationDialog = false },
             onConfirm = {
-                val matchedId = bookingData.find { it.date == dateSelected }?.bookingId
-                val api = RetrofitService.getRetrofit().create(ParkingSlotApi::class.java)
-                api.releaseSlot(bookingId = matchedId).enqueue(object : Callback<BookingResponse> {
-                    override fun onResponse(call: Call<BookingResponse>, response: Response<BookingResponse>) {
-                        if ( response.body()!=null) {
-                            Toast.makeText(context, "slot released", Toast.LENGTH_SHORT).show()
-                            //re render everything this data is fetched from parkingArea we can move it to common if we want
-                            getCurrentBookingOfUser(
-                                userId = userId,
-                                parkingAreaId = Integer.parseInt(parkingAreaId),
-                                navController = navController,
-                                context = context
-                            )
-                        } else {
-                            Toast.makeText(context, "Failed", Toast.LENGTH_SHORT).show()
-                        }
-                    }
+                handleReleaseSlot(
+                    bookingData = bookingData,
+                    dateSelected = dateSelected,
+                    userId = userId,
+                    parkingAreaId = parkingAreaId.toString(),
+                    navController = navController,
+                    context = context,
+                    repository = parkingAreaRepository
+                )
 
-                    override fun onFailure(call: Call<BookingResponse>, t: Throwable) {
-                        Toast.makeText(context, "Error: ${t.message}", Toast.LENGTH_SHORT).show()
-                    }
-                })
                 showDialog = false
                 showConfirmationDialog = false
             },
@@ -166,34 +146,106 @@ fun myBookings(
 }
 
 
-fun buildUserData(parkingAreaId: String?, userList: MutableList<User>,context:Context,onTransferReady: () -> Unit) {
-    val api = RetrofitService.getRetrofit().create(ParkingSlotApi::class.java)
-    api.findParkingAreaById(parkingAreaId = Integer.parseInt(parkingAreaId)).enqueue(object : Callback<ParkingAreaResponse> {
-        override fun onResponse(call: Call<ParkingAreaResponse>, response: Response<ParkingAreaResponse>) {
-            if ( response.body()!=null) {
-                if(response.body()?.status==0){
-                    userList.clear()
-                    var userDataList = response.body()?.data?.users;
-                    val userListFromUserData: List<User> = userDataList?.map { userData ->
-                        User(
-                            id = userData.userId,
-                            name = userData.name,
-                        )
-                    } ?: mutableListOf()
-                    userList.addAll(userListFromUserData);
-                    onTransferReady()
-                }else{
-                    Toast.makeText(context, "Users not found", Toast.LENGTH_SHORT).show()
-                }
-            } else {
-                Toast.makeText(context, "Users not found", Toast.LENGTH_SHORT).show()
-            }
+fun handleSlotTransfer(
+    bookingData: List<BookingData>,
+    dateSelected: String,
+    selectedUserIdForTransfer: Int,
+    context: Context,
+    onTransferCompleted: () -> Unit,
+    repository: ParkingAreaRepository
+) {
+    val matchedId = bookingData.find { it.date == dateSelected }?.bookingId
+
+    if (matchedId == null) {
+        Toast.makeText(context, "No booking found for selected date", Toast.LENGTH_SHORT).show()
+        return
+    }
+
+    repository.bookSlotForUser(selectedUserIdForTransfer, matchedId) { result ->
+        result.onSuccess {
+            Toast.makeText(context, "Slot reallocated", Toast.LENGTH_SHORT).show()
+            onTransferCompleted() // e.g., hide dialog
+        }
+        result.onFailure { error ->
+            Toast.makeText(
+                context,
+                error.message ?: "Failed to reallocate slot",
+                Toast.LENGTH_SHORT
+            ).show()
+        }
+    }
+}
+
+
+fun handleReleaseSlot(
+    bookingData: List<BookingData>,
+    dateSelected: String,
+    userId: Int,
+    parkingAreaId: String,
+    navController: NavController,
+    context: Context,
+    repository: ParkingAreaRepository
+) {
+    val matchedId = bookingData.find { it.date == dateSelected }?.bookingId
+
+    if (matchedId == null) {
+        Toast.makeText(context, "No booking found for selected date", Toast.LENGTH_SHORT).show()
+        return
+    }
+
+    repository.releaseSlotRepository(matchedId) { result ->
+        result.onSuccess {
+            Toast.makeText(context, "Slot released", Toast.LENGTH_SHORT).show()
+            // Refresh booking data
+            handleGetCurrentBookingOfUser(
+                userId = userId,
+                parkingAreaId = parkingAreaId.toInt(),
+                navController = navController,
+                context = context,
+                repository = BookingRepository()
+            )
+        }
+        result.onFailure { error ->
+            Toast.makeText(
+                context,
+                error.message ?: "Failed to release slot",
+                Toast.LENGTH_SHORT
+            ).show()
+        }
+    }
+}
+
+fun buildUserData(
+    parkingAreaId: String,
+    userList: MutableList<User>,
+    context: Context,
+    repository: ParkingAreaRepository,
+    onTransferReady: () -> Unit
+) {
+    repository.findParkingAreaById(parkingAreaId) { result ->
+        result.onSuccess { response ->
+            userList.clear()
+
+            val usersFromApi: List<User> = response.data?.users?.map { userData ->
+                User(
+                    id = userData.userId,
+                    name = userData.name
+                )
+            } ?: emptyList()
+
+            userList.addAll(usersFromApi)
+            onTransferReady()
         }
 
-        override fun onFailure(call: Call<ParkingAreaResponse>, t: Throwable) {
-            Toast.makeText(context, "Error: ${t.message}", Toast.LENGTH_SHORT).show()
+        result.onFailure { error ->
+            Toast.makeText(
+                context,
+                error.message ?: "Failed to fetch users",
+                Toast.LENGTH_SHORT
+            ).show()
         }
-    })
+    }
 }
+
 
 

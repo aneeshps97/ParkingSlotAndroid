@@ -49,7 +49,9 @@ import com.example.parkingslot.webConnect.dto.parkingArea.ParkingAreaResponse
 import com.example.parkingslot.webConnect.dto.slot.Slot
 import com.example.parkingslot.webConnect.dto.slot.SlotData
 import com.example.parkingslot.webConnect.dto.slot.SlotDataResponse
+import com.example.parkingslot.webConnect.dto.user.User
 import com.example.parkingslot.webConnect.dto.user.UserData
+import com.example.parkingslot.webConnect.repository.ParkingAreaRepository
 import com.example.parkingslot.webConnect.retrofit.ParkingSlotApi
 import com.example.parkingslot.webConnect.retrofit.RetrofitService
 import com.google.gson.Gson
@@ -61,7 +63,7 @@ import retrofit2.Response
 fun EditBooking(
     navController: NavController,
     modifier: Modifier = Modifier,
-    parkingAreaId:Int,
+    parkingAreaId: Int,
     bookingDataList: List<BookingData>
 ) {
     val listOfBookings = remember { mutableStateListOf(*bookingDataList.toTypedArray()) }
@@ -69,24 +71,19 @@ fun EditBooking(
 
     val showRemoveBooking = remember { mutableStateOf(false) }
 
-    val bookingToRemove = remember { mutableStateOf(BookingData(
-        bookingId = 0,
-        user = null,
-        parkingArea = null,
-        date = null,
-        slot = null
-    )) }
+    val bookingToRemove = remember { mutableStateOf(BookingData.EMPTY) }
     val slotToUpdate = remember { mutableStateOf(SlotData(0, "")) }
     val context: Context = LocalContext.current
     val indexToRemove = remember { mutableStateOf(-1) }
     val indexToUpdate = remember { mutableStateOf(-1) }
+    var parkingAreaRepository: ParkingAreaRepository = ParkingAreaRepository();
     ConfirmPopUp(
         showDialog = showRemoveBooking.value,
         onDismiss = { showRemoveBooking.value = false },
         onConfirm = {
             showRemoveBooking.value = false;
             if (indexToRemove.value in listOfBookings.indices) {
-                removeBooking( context, listOfBookings, indexToRemove.value)
+                removeBooking(context, listOfBookings, indexToRemove.value)
             }
         },
         "Going to remove",
@@ -95,8 +92,8 @@ fun EditBooking(
 
     PageBackground {
 
-        Column ( modifier= modifier.fillMaxSize()){
-            Box(Modifier.fillMaxSize()){
+        Column(modifier = modifier.fillMaxSize()) {
+            Box(Modifier.fillMaxSize()) {
                 Text(
                     "EDIT",
                     modifier = Modifier
@@ -109,7 +106,7 @@ fun EditBooking(
                         .align(Alignment.Center)
                         .fillMaxWidth()
                         .padding(16.dp)
-                ){
+                ) {
 
                     ScrollableBoxContentForEditBookings(
                         listOfBookings, onRemove = { index ->
@@ -130,7 +127,7 @@ fun EditBooking(
 
                         Button(
                             onClick = {
-                                handleAssignSlotForUsers(context,parkingAreaId,navController)
+                                handleAssignSlotForUsers(context, parkingAreaId.toString(), navController,parkingAreaRepository)
                             },
                             modifier = Modifier
                                 .height(60.dp)
@@ -153,7 +150,22 @@ fun EditBooking(
                         Spacer(modifier.height(20.dp))
 
                         Button(
-                            onClick = {/*navController.navigate(Routes.editParkingArea+"/"+parkingAreaData.parkingAreaId+"/"+parkingAreaData.name)*/},
+                            onClick = {
+                                parkingAreaRepository.findParkingAreaById(parkingAreaId.toString()) { result ->
+                                    result.onSuccess { response ->
+                                        val data = response.data
+                                        navController.navigate("${Routes.editParkingArea}/${data.parkingAreaId}/${data.name}")
+                                    }
+                                    result.onFailure { error ->
+                                        Toast.makeText(
+                                            context,
+                                            error.message ?: "Users not found",
+                                            Toast.LENGTH_SHORT
+                                        ).show()
+                                    }
+                                }
+
+                            },
                             modifier = Modifier
                                 .height(60.dp)
                                 .fillMaxWidth(0.9f),
@@ -184,64 +196,58 @@ fun EditBooking(
 }
 
 
-
-
-fun removeBooking(context: Context, listOfBooking: SnapshotStateList<BookingData>, index: Int){
+fun removeBooking(context: Context, listOfBooking: SnapshotStateList<BookingData>, index: Int) {
     val api = RetrofitService.getRetrofit().create(ParkingSlotApi::class.java)
-    listOfBooking.get(index).bookingId?.let { api.removeBooking(it) }?.enqueue(object :Callback<BookingResponse>{
-        override fun onResponse(
-            call: Call<BookingResponse?>,
-            response: Response<BookingResponse?>
-        ) {
-            if(response.body()?.status==0){
-                Toast.makeText(context, "Slot removed", Toast.LENGTH_SHORT).show()
-                listOfBooking.removeAt(index)
+    listOfBooking.get(index).bookingId?.let { api.removeBooking(it) }
+        ?.enqueue(object : Callback<BookingResponse> {
+            override fun onResponse(
+                call: Call<BookingResponse?>,
+                response: Response<BookingResponse?>
+            ) {
+                if (response.body()?.status == 0) {
+                    Toast.makeText(context, "Slot removed", Toast.LENGTH_SHORT).show()
+                    listOfBooking.removeAt(index)
+                }
             }
-        }
 
-        override fun onFailure(
-            call: Call<BookingResponse?>,
-            t: Throwable
-        ) {
-            TODO("Not yet implemented")
-        }
+            override fun onFailure(
+                call: Call<BookingResponse?>,
+                t: Throwable
+            ) {
+                TODO("Not yet implemented")
+            }
 
-    })
+        })
 
 }
 
-fun handleAssignSlotForUsers(context: Context,parkingAreaId: Int,navController: NavController){
-    val api = RetrofitService.getRetrofit().create(ParkingSlotApi::class.java)
-    api.findParkingAreaById(parkingAreaId).enqueue(object : Callback<ParkingAreaResponse> {
-        override fun onResponse(
-            call: Call<ParkingAreaResponse?>,
-            response: Response<ParkingAreaResponse?>
-        ) {
-            if(response.body()?.status==0){
-                val json = Uri.encode(Gson().toJson(response.body()?.data))
-                navController.navigate(Routes.assignSlotForUsers+ "/$json")
-            }else{
-                Toast.makeText(
-                    context, "" + response.body()?.message, Toast.LENGTH_SHORT
-                ).show()
-            }
+fun handleAssignSlotForUsers(
+    context: Context,
+    parkingAreaId: String,
+    navController: NavController,
+    repository: ParkingAreaRepository
+) {
+    repository.findParkingAreaById(parkingAreaId) { result ->
+        result.onSuccess { response ->
+            val json = Uri.encode(Gson().toJson(response.data))
+            navController.navigate("${Routes.assignSlotForUsers}/$json")
         }
 
-        override fun onFailure(
-            call: Call<ParkingAreaResponse?>,
-            t: Throwable
-        ) {
-            Toast.makeText(context, "Error: ${t.message}", Toast.LENGTH_SHORT).show()
+        result.onFailure { error ->
+            Toast.makeText(
+                context,
+                error.message ?: "Failed to load parking area",
+                Toast.LENGTH_SHORT
+            ).show()
         }
-
-    })
-
+    }
 }
 
 
 @Composable
-fun ScrollableBoxContentForEditBookings(listofData: List<BookingData>,
-                                        onRemove: (Int) -> Unit,context:Context
+fun ScrollableBoxContentForEditBookings(
+    listofData: List<BookingData>,
+    onRemove: (Int) -> Unit, context: Context
 ) {
     val scrollState = rememberScrollState()
     Box(
@@ -250,13 +256,14 @@ fun ScrollableBoxContentForEditBookings(listofData: List<BookingData>,
             .verticalScroll(scrollState)
             .padding(16.dp)
     ) {
-        Column {listofData.forEachIndexed { index, data ->
-            LabelWithTrailingIcon(
-                "${data.date}\n${data.slot?.name} \n${data.user?.name}",
-                { onRemove(index) }
-            )
-            Spacer(modifier = Modifier.height(8.dp))
-        }
+        Column {
+            listofData.forEachIndexed { index, data ->
+                LabelWithTrailingIcon(
+                    "${data.date}\n${data.slot?.name} \n${data.user?.name}",
+                    { onRemove(index) }
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+            }
         }
     }
 }

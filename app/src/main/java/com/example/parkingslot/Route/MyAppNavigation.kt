@@ -22,8 +22,6 @@ import com.example.parkingslot.mainpages.ParkingArea.parkingArea
 import com.example.parkingslot.mainpages.availableslot.AvailableSlot
 import com.example.parkingslot.mainpages.home.HomePage
 import com.example.parkingslot.mainpages.parkingTicket.ParkingTicket
-import com.example.parkingslot.mainpages.releaseSlot.ReleaseSlot
-import com.example.parkingslot.mainpages.transferSlot.TransferSlot
 import com.example.parkingslot.mainpages.userauth.Login
 import com.example.parkingslot.mainpages.userauth.SignUp
 import com.example.parkingslot.sharedView.BookingViewModel
@@ -249,20 +247,6 @@ fun MyAppNavigation() {
                     parkingAreaId = parkingAreaId
                 )
 
-            }
-
-            // for the popup to transfer the slot
-            composable(Routes.transferSlot) {
-                TransferSlot(
-                    navController = navController
-                )
-            }
-
-            //for releasing the slot
-            composable(Routes.releaseSlot) {
-                ReleaseSlot(
-                    navController = navController
-                )
             }
 
             composable(Routes.editParkingArea + "/{parkingAreaId}/{parkingAreaName}") {

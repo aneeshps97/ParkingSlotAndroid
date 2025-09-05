@@ -22,45 +22,76 @@ import retrofit2.http.Path
 import retrofit2.http.Query
 
 interface ParkingSlotApi {
-    @POST("/parkingslot/logIn")
+    @POST("parkingslot/logIn")
     fun login(@Body request: LoginRequest): Call<LoginResponse>
 
     @POST(value = "parkingslot/signUp")
     fun signUp(@Body request: SignUpRequest): Call<SignUpResponse>
 
+    @GET("parkingslot/findUserByEmail")
+    fun findUserByEmail(@Query("email") email: String?): Call<UserResponse>
+
+    @GET("parkingslot/findUserById")
+    fun findUserDetailsById(
+        @Query("userId") userId: Int?
+    ): Call<UserResponse>
+
+
     @GET("parkingslot/booking/by-date")
     fun getBookingByUserParkingAndDate(
         @Query("userId") userId: Int,
-        @Query(value = "parkingAreaId") pId:Int,
+        @Query(value = "parkingAreaId") pId: Int,
         @Query("date") date: String // or LocalDate if using Moshi/JavaTimeAdapter
     ): Call<BookingResponse>
 
     @GET("parkingslot/booking/by-user")
     fun getBookingByUserForParkingArea(
         @Query("userId") userId: Int,
-        @Query(value = "parkingAreaId") pId:Int,
-    ): Call <BookingResponse>
+        @Query(value = "parkingAreaId") pId: Int,
+    ): Call<BookingResponse>
 
     @GET("parkingslot/booking/parkingArea")
     fun getBookingByParkingArea(
-        @Query(value = "parkingAreaId") parkingAreaId:Int,
-    ): Call <BookingResponse>
+        @Query(value = "parkingAreaId") parkingAreaId: Int,
+    ): Call<BookingResponse>
 
     @GET("parkingslot/booking/getFreeSlots")
     fun getFreeSlotsInParkingArea(
-        @Query(value = "parkingAreaId") parkingAreaId:Int
-    ): Call <BookingResponse>
+        @Query(value = "parkingAreaId") parkingAreaId: Int
+    ): Call<BookingResponse>
 
     @PUT("parkingslot/booking/release")
     fun releaseSlot(
         @Query("bookingId") bookingId: Int?
-    ): Call <BookingResponse>
+    ): Call<BookingResponse>
 
     @PUT("parkingslot/booking/bookSlotForUser")
     fun bookSlotForUser(
         @Query("userId") userId: Int?,
         @Query("bookingId") bookingId: Int?
-    ): Call <BookingResponse>
+    ): Call<BookingResponse>
+
+    @POST(value = "parkingslot/booking/assignSlotsToUser")
+    fun assignSlotsToUser(@Body request: BookingRequest): Call<BookingResponse>
+
+    @DELETE("parkingslot/slot/deleteSlot/{slotId}")
+    fun deleteSlot(
+        @Path("slotId") slotId: Int,
+    ): Call<SlotDataResponse>
+
+    @PUT("parkingslot/slot/updateSlot/{slotId}")
+    fun updateSlot(
+        @Body slot: SlotData,
+        @Path("slotId") slotId: Int
+
+    ): Call<SlotDataResponse>
+
+    @POST("parkingslot/slot/createSlot/{parkingAreaId}")
+    fun addSlots(
+        @Body slot: Slot,
+        @Path(value = "parkingAreaId") parkingAreaId: Int
+
+    ): Call<SlotDataResponse>
 
     @POST(value = "parkingslot/parkingArea/createParkingArea")
     fun createParkingArea(@Body request: ParkingAreaRequest): Call<ParkingAreaResponse>
@@ -70,69 +101,41 @@ interface ParkingSlotApi {
         @Path("id") id: Int, @Body slots: List<Slot>
     ): Call<ParkingAreaResponse>
 
-    @GET("parkingslot/findUserByEmail")
-    fun findUserByEmail (@Query("email") email: String?):Call<UserResponse>
 
     @PUT("parkingslot/parkingArea/{id}/addUsers")
     fun addUsersToParkingArea(
         @Path("id") id: Int, @Body users: List<Int>
     ): Call<ParkingAreaResponse>
 
-    @POST(value = "/parkingslot/booking/assignSlotsToUser")
-    fun assignSlotsToUser(@Body request: BookingRequest):Call<BookingResponse>
-
 
     @GET("parkingslot/parkingArea/viewParkingArea")
     fun findParkingAreaById(
         @Query("parkingAreaId") parkingAreaId: Int?
-    ): Call <ParkingAreaResponse>
+    ): Call<ParkingAreaResponse>
 
-    @GET("parkingslot/findUserById")
-    fun findUserDetailsById(
-        @Query("userId") userId: Int?
-    ): Call<UserResponse>
 
-    @PUT("/parkingslot/parkingArea/updateName/{id}")
+    @PUT("parkingslot/parkingArea/updateName/{id}")
     fun updateParkingAreaName(
         @Path("id") id: Int,
         @Query("newName") newName: String
     ): Call<ParkingAreaResponse>
 
-    @DELETE("/parkingslot/slot/deleteSlot/{slotId}")
-    fun deleteSlot(
-        @Path("slotId") slotId: Int,
-    ): Call<SlotDataResponse>
 
-    @DELETE("/parkingslot/booking/removeBooking")
+    @DELETE("parkingslot/booking/removeBooking")
     fun removeBooking(
         @Query("bookingId") bookingId: Int,
     ): Call<BookingResponse>
 
-    @PUT("/parkingslot/parkingArea/removeUserFromParkingArea/{parkingAreaId}")
+    @PUT("parkingslot/parkingArea/removeUserFromParkingArea/{parkingAreaId}")
     fun removeUserFromParkingArea(
         @Path("parkingAreaId") parkingAreaId: Int,
-        @Query("userId") userId:Int
+        @Query("userId") userId: Int
     ): Call<ParkingAreaResponse>
-
-    @PUT("/parkingslot/slot/updateSlot/{slotId}")
-    fun updateSlot(
-        @Body slot: SlotData,
-        @Path("slotId") slotId: Int
-
-    ): Call<SlotDataResponse>
-
-    @POST("/parkingslot/slot/createSlot/{parkingAreaId}")
-    fun addSlots(
-        @Body slot: Slot,
-        @Path(value = "parkingAreaId") parkingAreaId: Int
-
-    ): Call<SlotDataResponse>
 
     @DELETE("parkingslot/parkingArea/deleteParkingArea/{parkingAreaId}")
     fun deleteParkingArea(
         @Path("parkingAreaId") id: Int
     ): Call<ParkingAreaResponse>
-
 
 
 }
