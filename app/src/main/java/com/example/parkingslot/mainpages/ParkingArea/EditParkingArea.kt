@@ -214,7 +214,7 @@ fun EditParkingArea(
                         .padding(bottom = 32.dp)
                 ) {
                     Button(
-                        onClick = { navController.navigate(Routes.homePage) },
+                        onClick = { navController.navigate(Routes.viewYourParkingAreas) },
                         modifier = Modifier
                             .height(60.dp)
                             .fillMaxWidth(0.9f),

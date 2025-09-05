@@ -23,6 +23,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.example.parkingslot.Route.Routes
@@ -48,7 +49,7 @@ fun Login(navController: NavController) {
 
     LaunchedEffect(isLoggedIn) {
         if (isLoggedIn) {
-            navController.navigate(Routes.homePage)
+            navController.navigate(Routes.viewYourParkingAreas)
         }
     }
 
@@ -64,7 +65,7 @@ fun Login(navController: NavController) {
                         putString("name", data.name)
                         apply()
                     }
-                    navController.navigate(Routes.homePage)
+                    navController.navigate(Routes.viewYourParkingAreas)
                 }
                 result.onFailure { error ->
                     Toast.makeText(context, error.message ?: "Login failed", Toast.LENGTH_SHORT).show()
@@ -99,7 +100,12 @@ fun LoginScreen(
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Text("Login", style = MaterialTheme.typography.headlineMedium)
+            Text(
+                text = "Login",
+                style = MaterialTheme.typography.headlineMedium.copy(
+                    fontWeight = FontWeight.Bold
+                )
+            )
             Spacer(modifier = Modifier.height(16.dp))
 
             LabeledTextField(value = email, onValueChange = { email = it }, label = "Email")

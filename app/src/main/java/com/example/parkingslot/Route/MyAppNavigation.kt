@@ -94,13 +94,8 @@ fun MyAppNavigation() {
 
             //showing parking areas
             composable(Routes.viewYourParkingAreas) {
-                val parkingAreasOfUser = navController.previousBackStackEntry
-                    ?.savedStateHandle
-                    ?.get<List<ParkingAreaData>>("parkingAreasOfUser")
-                    ?: emptyList()
                 ViewYourParkingAreas(
-                    navController = navController,
-                    parkingAreas = parkingAreasOfUser
+                    navController = navController
                 )
             }
 

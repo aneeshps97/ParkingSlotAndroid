@@ -22,6 +22,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.example.parkingslot.Route.Routes
@@ -63,7 +64,12 @@ fun SignUp(navController: NavController) {
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Text("SignUp", style = MaterialTheme.typography.headlineMedium)
+            Text(
+                text = "SignUp",
+                style = MaterialTheme.typography.headlineMedium.copy(
+                    fontWeight = FontWeight.Bold
+                )
+            )
             Spacer(modifier = Modifier.height(16.dp))
 
             LabeledTextField(value = name, onValueChange = { name = it }, label = "Name")
@@ -102,7 +108,7 @@ fun SignUp(navController: NavController) {
                                 putString("name", data.name)
                                 apply()
                             }
-                            navController.navigate(Routes.homePage)
+                            navController.navigate(Routes.viewYourParkingAreas)
                         }
                         result.onFailure { error ->
                             Toast.makeText(context, error.message ?: "Signup failed", Toast.LENGTH_SHORT).show()

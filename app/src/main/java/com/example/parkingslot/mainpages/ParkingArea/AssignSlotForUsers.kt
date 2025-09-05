@@ -166,7 +166,7 @@ fun AssignSlotForUsers(
                 })
 
                 FinishButton({
-                    navController.navigate(Routes.homePage)
+                    navController.navigate(Routes.viewYourParkingAreas)
                 })
 
 

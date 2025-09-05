@@ -4,13 +4,22 @@ import android.content.Context
 import android.net.Uri
 import android.widget.Toast
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AddChart
+import androidx.compose.material.icons.filled.ConfirmationNumber
+import androidx.compose.material.icons.filled.DateRange
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -20,7 +29,6 @@ import com.example.parkingslot.Route.Routes
 import com.example.parkingslot.mainpages.background.PageBackground
 import com.example.parkingslot.customresuables.confirm.ConfirmPopUp
 import com.example.parkingslot.webConnect.dto.booking.BookingData
-import com.example.parkingslot.webConnect.dto.booking.BookingResponse
 import com.example.parkingslot.webConnect.dto.parkingArea.ParkingAreaResponse
 import com.example.parkingslot.webConnect.repository.BookingRepository
 import com.example.parkingslot.webConnect.repository.ParkingAreaRepository
@@ -37,7 +45,7 @@ fun parkingArea(
     navController: NavController, modifier: Modifier = Modifier,
     parkingAreaId: String,
     parkingAreaName: String,
-    adminId:String,
+    adminId: String,
 ) {
     val context = LocalContext.current
     val sharedPref = remember { context.getSharedPreferences("loginPref", Context.MODE_PRIVATE) }
@@ -51,15 +59,18 @@ fun parkingArea(
             ConfirmPopUp(
                 showDialog = showConfirmationDialog,
                 onDismiss = { showConfirmationDialog = false },
-                onConfirm = {
-
-                }
+                onConfirm = { /* Confirmation logic */ }
             )
             Box(
-                modifier = Modifier.fillMaxSize(),
+                modifier = Modifier.fillMaxSize().padding(20.dp),
                 contentAlignment = Alignment.TopCenter
             ) {
-                Text(parkingAreaName)
+                Text(
+                    parkingAreaName,
+                    style = MaterialTheme.typography.headlineSmall.copy(
+                        fontWeight = FontWeight.SemiBold
+                    )
+                )
             }
             Box(
                 modifier = Modifier.fillMaxSize(),
@@ -69,43 +80,98 @@ fun parkingArea(
                     horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
-                    DashboardButton("View Ticket") {
-                        val today = LocalDate.now().toString()
-
-                        handleBookingCheckForToday(
-                                parkingAreaId = parkingAreaId.toInt(),
-                                context = context,
-                                userId = userId,
-                                navController = navController,
-                                repository = bookingRepository
+                    Box(
+                        modifier = Modifier
+                            .shadow(
+                                elevation = 8.dp, // Adjust this value to change the shadow depth
+                                shape = RoundedCornerShape(16.dp)
                             )
-                    }
-                    DashboardButton("Available Slots") {
-                        handleGetFreeSlotsInParkingArea(
-                            userId = userId,
-                            parkingAreaId = Integer.parseInt(parkingAreaId),
-                            navController = navController,
-                            context = context,
-                            repository = parkingAreaRepository
-                        )
-                    }
-                    DashboardButton("My Bookings") {
-                        handleGetCurrentBookingOfUser(
-                            userId = userId,
-                            parkingAreaId = Integer.parseInt(parkingAreaId),
-                            navController = navController,
-                            context = context,
-                            repository = bookingRepository
-                        )
-                    }
-                    if(userId.toString().equals(adminId.toString())){
-                        Spacer(modifier.height(30.dp))
-                        DashboardButton("Delete ParkingArea") {
-                            handleDeleteParkingArea(Integer.parseInt(parkingAreaId),context,navController)
+                            .background(Color.White, shape = RoundedCornerShape(16.dp))
+                            .fillMaxWidth(0.9f) // The Box should fill the width to contain the buttons
+                    ) {
+                        Column(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
+                            Spacer(modifier = Modifier.height(16.dp))
+
+                            DashboardButton(
+                                text = "View Ticket",
+                                icon = Icons.Default.ConfirmationNumber,
+                                onClick = {
+                                    handleBookingCheckForToday(
+                                        parkingAreaId = parkingAreaId.toInt(),
+                                        context = context,
+                                        userId = userId,
+                                        navController = navController,
+                                        repository = bookingRepository
+                                    )
+                                }
+                            )
+                            Spacer(modifier = Modifier.height(16.dp))
+                            DashboardButton("Available Slots", icon = Icons.Default.AddChart, onClick = {
+                                handleGetFreeSlotsInParkingArea(
+                                    userId = userId,
+                                    parkingAreaId = Integer.parseInt(parkingAreaId),
+                                    navController = navController,
+                                    context = context,
+                                    repository = parkingAreaRepository
+                                )
+                            })
+                            Spacer(modifier = Modifier.height(16.dp))
+                            DashboardButton("My Bookings", icon = Icons.Default.DateRange, onClick = {
+                                handleGetCurrentBookingOfUser(
+                                    userId = userId,
+                                    parkingAreaId = Integer.parseInt(parkingAreaId),
+                                    navController = navController,
+                                    context = context,
+                                    repository = bookingRepository
+                                )
+                            })
+
+                            Spacer(modifier = Modifier.height(16.dp))
+
                         }
-                        DashboardButton("Update ParkingArea") {
-                            navController.navigate(Routes.editParkingArea + "/" + parkingAreaId + "/" + parkingAreaName)
+                    }
+
+                    if (userId.toString() == adminId.toString()) {
+                        Spacer(modifier = Modifier.height(16.dp))
+                        Box(
+                            modifier = Modifier
+                                .shadow(
+                                    elevation = 8.dp, // Adjust this value to change the shadow depth
+                                    shape = RoundedCornerShape(16.dp)
+                                )
+                                .background(Color.White, shape = RoundedCornerShape(16.dp))
+                                .fillMaxWidth(0.9f) // The Box should fill the width to contain the buttons
+                        ) {
+                            Column(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalAlignment = Alignment.CenterHorizontally
+                            ) {
+                                Spacer(modifier = Modifier.height(16.dp))
+                                DashboardButton(
+                                    "Delete",
+                                    icon = Icons.Default.Delete,
+                                    onClick = {
+                                        handleDeleteParkingArea(
+                                            Integer.parseInt(parkingAreaId),
+                                            context,
+                                            navController
+                                        )
+                                    })
+                                Spacer(modifier = Modifier.height(16.dp)) // Added space between buttons
+                                DashboardButton(
+                                    "Update",
+                                    icon = Icons.Default.Edit,
+                                    onClick = {
+                                        navController.navigate(Routes.editParkingArea + "/" + parkingAreaId + "/" + parkingAreaName)
+                                    })
+                                Spacer(modifier = Modifier.height(16.dp))
+                            }
                         }
+
+
                     }
                 }
             }
@@ -113,37 +179,31 @@ fun parkingArea(
     }
 }
 
-fun handleDeleteParkingArea(parkingAreaId: Int,context: Context,navController: NavController){
+fun handleDeleteParkingArea(parkingAreaId: Int, context: Context, navController: NavController) {
     try {
-        //when it is success navigate to home page
         val api = RetrofitService.getRetrofit().create(ParkingSlotApi::class.java)
         api.deleteParkingArea(parkingAreaId)
-            .enqueue(object : Callback<ParkingAreaResponse>{
+            .enqueue(object : Callback<ParkingAreaResponse> {
                 override fun onResponse(
                     call: Call<ParkingAreaResponse?>,
                     response: Response<ParkingAreaResponse?>
                 ) {
-                    if(response.body()?.status==0){
-                        Toast.makeText(context, "parking area deleted", Toast.LENGTH_SHORT)
-                            .show()
+                    if (response.body()?.status == 0) {
+                        Toast.makeText(context, "parking area deleted", Toast.LENGTH_SHORT).show()
                         navController.navigate(Routes.homePage)
-                    }else{
-                        Toast.makeText(context, "failed", Toast.LENGTH_SHORT)
-                            .show()
+                    } else {
+                        Toast.makeText(context, "failed", Toast.LENGTH_SHORT).show()
                     }
-
                 }
 
                 override fun onFailure(
                     call: Call<ParkingAreaResponse?>,
                     t: Throwable
                 ) {
-                    Toast.makeText(context, "Error: ${t.message}", Toast.LENGTH_SHORT)
-                        .show()
+                    Toast.makeText(context, "Error: ${t.message}", Toast.LENGTH_SHORT).show()
                 }
             })
-
-    }catch (e: Exception) {
+    } catch (e: Exception) {
         Toast.makeText(context, "Exception occurred: ${e.message}", Toast.LENGTH_SHORT).show()
     }
 }
@@ -176,7 +236,6 @@ fun handleGetFreeSlotsInParkingArea(
         Toast.makeText(context, "Exception occurred: ${e.message}", Toast.LENGTH_SHORT).show()
     }
 }
-
 
 fun handleGetCurrentBookingOfUser(
     context: Context,
@@ -235,24 +294,50 @@ fun handleBookingCheckForToday(
     }
 }
 
-
-
-
 @Composable
-fun DashboardButton(text: String, onClick: () -> Unit = {}) {
+fun DashboardButton(
+    text: String,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+    icon: ImageVector
+) {
     Button(
         onClick = onClick,
-        modifier = Modifier
+        modifier = modifier
             .fillMaxWidth(0.8f)
             .height(60.dp)
             .padding(2.dp),
         shape = RoundedCornerShape(16.dp),
         colors = ButtonDefaults.buttonColors(
-            containerColor = Color.White, contentColor = Color.Black
+            containerColor = Color.White,
+            contentColor = Color.Black
         ),
-        border = BorderStroke(2.dp, Color.Black),
-        elevation = null
+        elevation = ButtonDefaults.buttonElevation(defaultElevation = 4.dp)
     ) {
-        Text(text = text, fontSize = 18.sp, fontWeight = FontWeight.SemiBold)
+        // CONTENT ROW:
+        // Use a Row to arrange the icon and text horizontally
+        // Added Modifier.fillMaxWidth() and Arrangement.Start
+        Row(
+            modifier = Modifier.fillMaxWidth(), // This makes the row take the entire button width
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.Start // This aligns content to the start
+        ) {
+            // Your leading icon
+            Icon(
+                imageVector = icon,
+                contentDescription = null, // decorative icon
+                modifier = Modifier.size(24.dp) // adjust size as needed
+            )
+
+            // Add some space between the icon and the text
+            Spacer(modifier = Modifier.width(12.dp))
+
+            // Your button text
+            Text(
+                text = text,
+                fontSize = 18.sp,
+                fontWeight = FontWeight.SemiBold
+            )
+        }
     }
 }

@@ -3,7 +3,10 @@ package com.example.parkingslot.mainpages.MyBookings
 import android.content.Context
 import android.widget.Toast
 import androidx.activity.compose.BackHandler
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -11,7 +14,10 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.example.parkingslot.Route.Routes
 import com.example.parkingslot.mainpages.background.PageBackground
@@ -55,7 +61,7 @@ fun myBookings(
     var bookingRespository = BookingRepository()
     PageBackground() {
         BackHandler {
-            navController.navigate(Routes.homePage)
+            navController.navigate(Routes.viewYourParkingAreas)
         }
         TransferOrReleasePopup(
             showDialog = showDialog,
@@ -126,7 +132,11 @@ fun myBookings(
             "Release slot",
             "Are you sure?"
         )
-        Box(contentAlignment = Alignment.Center) {
+        Box(contentAlignment = Alignment.Center,modifier=modifier.padding(10.dp).shadow(
+            elevation = 8.dp, // Adjust this value to change the shadow depth
+            shape = RoundedCornerShape(16.dp)
+        )
+            .background(Color.White, shape = RoundedCornerShape(16.dp))) {
             val context = LocalContext.current
             Calender(
                 modifier =modifier,

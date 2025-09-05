@@ -1,5 +1,6 @@
 package com.example.parkingslot.mainpages.background
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -19,10 +20,13 @@ import androidx.compose.ui.unit.dp
 @Composable
 fun PageBackground(
     modifier: Modifier = Modifier,
+    backgroundColor: Color=Color.White, // Dark gray as default
     content: @Composable ColumnScope.() -> Unit
 ) {
     Column(
-        modifier = modifier.fillMaxSize(),
+        modifier = modifier
+            .fillMaxSize()
+            .background(backgroundColor), // Add background here
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
@@ -33,15 +37,16 @@ fun PageBackground(
                     color = Color.Black,
                     shape = RoundedCornerShape(16.dp)
                 )
-                .padding(16.dp)
+                .padding(0.dp)
                 .fillMaxWidth(0.90f)
-                .fillMaxHeight(0.90f),
+                .fillMaxHeight(0.90f)
+                .background(backgroundColor, shape = RoundedCornerShape(16.dp)), // Inner background
             contentAlignment = Alignment.Center
         ) {
             Column(
                 verticalArrangement = Arrangement.spacedBy(12.dp),
                 horizontalAlignment = Alignment.CenterHorizontally,
-                content = content // Pass the content to be displayed inside the layout
+                content = content
             )
         }
     }
