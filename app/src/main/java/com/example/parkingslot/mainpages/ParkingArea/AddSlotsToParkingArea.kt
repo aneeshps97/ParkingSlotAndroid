@@ -1,6 +1,5 @@
 package com.example.parkingslot.mainpages.ParkingArea
 
-import android.content.Context
 import android.widget.Toast
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -28,13 +27,7 @@ import com.example.parkingslot.customresuables.buttons.ForwardButton
 import com.example.parkingslot.customresuables.scrollables.ScrollableBoxContent
 import com.example.parkingslot.customresuables.textfields.InputTextFieldWithButton
 import com.example.parkingslot.mainpages.background.PageBackground
-import com.example.parkingslot.webConnect.dto.parkingArea.ParkingAreaResponse
-import com.example.parkingslot.webConnect.dto.slot.Slot
-import com.example.parkingslot.webConnect.retrofit.ParkingSlotApi
-import com.example.parkingslot.webConnect.retrofit.RetrofitService
-import retrofit2.Call
-import retrofit2.Callback
-import retrofit2.Response
+import com.example.parkingslot.webConnect.repository.ParkingAreaRepository
 
 @Composable
 fun AddSlotsToParkingArea(
@@ -48,6 +41,7 @@ fun AddSlotsToParkingArea(
     var slotName by remember { mutableStateOf("") }
     var listOfSlots by remember { mutableStateOf(mutableListOf<String>()) }
     val context = LocalContext.current
+    val parkingAreaRepository = ParkingAreaRepository()
     PageBackground {
         Box(modifier = Modifier.fillMaxSize()) {
             Column(
@@ -92,41 +86,29 @@ fun AddSlotsToParkingArea(
             ) {
                 ForwardButton(
                     isEnabled = true,
-                    onClick = {saveSlotsDataToDb(navController,parkingAreaId,listOfSlots,context,parkingAreaName,adminId)},
-                    alignment = Alignment.BottomEnd,
+                    onClick = {
+                        parkingAreaRepository.addSlotsToParkingArea(parkingAreaId, listOfSlots) { result ->
+                            result.onSuccess {
+                                navController.navigate(
+                                    "${Routes.addUsersToParkingArea}/$parkingAreaId/$parkingAreaName/$adminId"
+                                )
+                            }
+                            result.onFailure { error ->
+                                Toast.makeText(
+                                    context,
+                                    error.message ?: "Failed to save slots",
+                                    Toast.LENGTH_SHORT
+                                ).show()
+                            }
+                        }
+                    },
+                    alignment = Alignment.BottomEnd
                 )
+
             }
         }
     }
 
-}
-
-fun saveSlotsDataToDb(navController: NavController,parkingAreaId:String?,listOfSlots: List<String>,context: Context,parkingAreaName:String?,adminId: String?){
-
-    val api = RetrofitService.getRetrofit().create(ParkingSlotApi::class.java)
-    val request = createSlotObjectFromTheData(listOfSlots)
-    api.addSlotsToParkingArea(id=Integer.parseInt(parkingAreaId),request).enqueue(object : Callback<ParkingAreaResponse> {
-        override fun onResponse(
-            call: Call<ParkingAreaResponse>,
-            response: Response<ParkingAreaResponse>
-        ) {
-            if (response.body() != null && response.body()?.status == 0) {
-               navController.navigate("${Routes.addUsersToParkingArea}/$parkingAreaId/$parkingAreaName/$adminId")
-            } else {
-                Toast.makeText(
-                    context, "" + response.body()?.message, Toast.LENGTH_SHORT
-                ).show()
-            }
-        }
-        override fun onFailure(call: Call<ParkingAreaResponse>, t: Throwable) {
-            Toast.makeText(context, "Error: ${t.message}", Toast.LENGTH_SHORT).show()
-        }
-    })
-
-}
-
-fun createSlotObjectFromTheData(slotList: List<String>): MutableList<Slot> {
-    return slotList.map { Slot(name = it) }.toMutableList()
 }
 
 

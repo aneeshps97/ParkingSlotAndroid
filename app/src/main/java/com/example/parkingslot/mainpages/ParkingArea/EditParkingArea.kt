@@ -5,15 +5,18 @@ import android.net.Uri
 import android.util.Log
 import android.widget.Toast
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AddCircleOutline
 import androidx.compose.material.icons.filled.ArrowForward
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -46,18 +49,25 @@ import retrofit2.Response
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.OutlinedTextFieldDefaults
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.ui.draw.shadow
 import com.example.parkingslot.webConnect.dto.booking.BookingData
 import com.example.parkingslot.webConnect.dto.booking.BookingResponse
+import com.example.parkingslot.webConnect.repository.BookingRepository
+import com.example.parkingslot.webConnect.repository.ParkingAreaRepository
 
 @Composable
 fun EditParkingArea(
     navController: NavController,
     modifier: Modifier = Modifier,
     parkingAreaId: String?,
-    parkingAreaName: String?
+    parkingAreaName: String?,
+    ticketLine1:String?,
+    ticketLine2: String?
 ) {
-    var name by remember { mutableStateOf(parkingAreaName) }
     val context: Context = LocalContext.current
+    var parkingAreaRepository: ParkingAreaRepository = ParkingAreaRepository()
+    var bookingRepository = BookingRepository()
     PageBackground {
         Column(
             modifier = Modifier.fillMaxSize()
@@ -65,9 +75,13 @@ fun EditParkingArea(
             Box(modifier = Modifier.fillMaxSize()) {
                 Text(
                     "EDIT",
+
                     modifier = Modifier
                         .align(Alignment.TopCenter)
-                        .padding(top = 16.dp)
+                        .padding(top = 16.dp),
+                    style = MaterialTheme.typography.headlineSmall.copy(
+                        fontWeight = FontWeight.SemiBold
+                    )
                 )
 
                 Box(
@@ -77,52 +91,38 @@ fun EditParkingArea(
                         .padding(16.dp)
                 ) {
                     Column {
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(8.dp)
-                        ) {
-                            Box(modifier = Modifier.weight(1f)) {
-                                OutlinedTextField(
-                                    value = name.toString(),
-                                    onValueChange = { name = it },
-                                    modifier = modifier,
-                                    colors = OutlinedTextFieldDefaults.colors(
-                                        focusedBorderColor = Color.DarkGray,
-                                        unfocusedBorderColor = Color.Black,
-                                    )
-                                )
-                            }
 
-                            Button(
-                                onClick = {
-                                    changeNameOftheParkingArea(
-                                        name.toString(),
-                                        parkingAreaId,
-                                        context
-                                    )
-                                },
-                                modifier = Modifier
-                                    .height(56.dp) // Match text field height
-                                    .align(Alignment.CenterVertically),
-                                shape = RoundedCornerShape(8.dp),
-                                colors = ButtonDefaults.buttonColors(
-                                    containerColor = Color.Black,
-                                    contentColor = Color.White
+                        Box(
+                            modifier = Modifier
+                                .shadow(
+                                    elevation = 8.dp, // Adjust this value to change the shadow depth
+                                    shape = RoundedCornerShape(16.dp)
                                 )
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Default.ArrowForward,
-                                    contentDescription = "Edit"
-                                )
-                            }
+                                .background(Color.White, shape = RoundedCornerShape(16.dp))
+                        ) {
+
+                            //updating the name
+                            ParkingAreaNameUpdater(
+                                parkingAreaName=parkingAreaName.toString(),
+                                parkingAreaId = parkingAreaId.toString(),
+                                context = context,
+                                parkingAreaRepository = parkingAreaRepository,
+                                ticketLine1 = ticketLine1.toString(),
+                                ticketLine2=ticketLine2.toString()
+                            )
                         }
+
 
                         Spacer(modifier = Modifier.height(20.dp)) // for horizontal spacing
 
                         Button(
                             onClick = {
-                                handleEditSlotsClick(parkingAreaId, context, navController);
+                                handleEditSlotsClick(
+                                    parkingAreaId.toString(),
+                                    context,
+                                    navController,
+                                    parkingAreaRepository
+                                );
                             },
                             modifier = Modifier
                                 .height(60.dp)
@@ -147,9 +147,10 @@ fun EditParkingArea(
                         Button(
                             onClick = {
                                 handleEditUsersClick(
-                                    parkingAreaId,
+                                    parkingAreaId.toString(),
                                     context,
-                                    navController
+                                    navController,
+                                    parkingAreaRepository
                                 )
                             },
                             modifier = Modifier
@@ -174,10 +175,11 @@ fun EditParkingArea(
 
                         Button(
                             onClick = {
-                                getCurrentBookingByParkingArea(
-                                    Integer.parseInt(
-                                        parkingAreaId
-                                    ), navController, context
+                                handleGetCurrentBookingByParkingArea(
+                                    context = context,
+                                    parkingAreaId = Integer.parseInt(parkingAreaId),
+                                    navController = navController,
+                                    repository = bookingRepository
                                 )
                             },
                             modifier = Modifier
@@ -207,7 +209,7 @@ fun EditParkingArea(
                         .padding(bottom = 32.dp)
                 ) {
                     Button(
-                        onClick = { navController.navigate(Routes.homePage) },
+                        onClick = { navController.navigate(Routes.viewYourParkingAreas) },
                         modifier = Modifier
                             .height(60.dp)
                             .fillMaxWidth(0.9f),
@@ -231,137 +233,221 @@ fun EditParkingArea(
     }
 }
 
-fun getCurrentBookingByParkingArea(
+
+
+@Composable
+fun ParkingAreaNameUpdater(parkingAreaName: String,parkingAreaId: String,context:Context,parkingAreaRepository: ParkingAreaRepository, ticketLine1: String, ticketLine2: String) {
+    // State to hold the value of the text field
+    var parkingAreaName by remember { mutableStateOf(parkingAreaName) }
+    var ticketLine1 by remember { mutableStateOf(ticketLine1) }
+    var ticketLine2 by remember { mutableStateOf(ticketLine2) }
+
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(16.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        // "Update Name" label
+        Text(
+            text = "Update",
+            style = MaterialTheme.typography.titleLarge,
+            fontWeight = FontWeight.Bold,
+            modifier = Modifier.align(Alignment.Start)
+        )
+
+        Spacer(modifier = Modifier.height(8.dp))
+
+        // Row containing the text field and button
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            // OutlinedTextField for entering the new name
+            OutlinedTextField(
+                value = parkingAreaName,
+                onValueChange = { parkingAreaName = it },
+                modifier = Modifier.weight(1f),
+                singleLine = true,
+                placeholder = { Text("Enter new name") },
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedContainerColor = Color.White,
+                    unfocusedContainerColor = Color.White,
+                    focusedBorderColor = Color.Gray,
+                    unfocusedBorderColor = Color.LightGray
+                ),
+                shape = RoundedCornerShape(8.dp)
+            )
+
+            // "Update" Button
+            Button(
+                onClick = {
+                    handleChangeNameAndTicketDetails(
+                        parkingAreaName = parkingAreaName,
+                        ticketLine1 = ticketLine1,
+                        ticketLine2 = ticketLine2,
+                        parkingAreaId = parkingAreaId,
+                        context = context,
+                        repository = parkingAreaRepository
+                    )
+                },
+                // Custom colors to match the blue button in the image
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = Color.DarkGray,
+                    contentColor = Color.White
+                ),
+                shape = RoundedCornerShape(8.dp),
+                modifier = Modifier.height(56.dp)
+            ) {
+                // The icon is now the only content to ensure it's always visible
+                Icon(
+                    imageVector = Icons.Default.ArrowForward,
+                    contentDescription = "Update",
+                    modifier = Modifier.size(24.dp) // Adjusted size for visibility
+                )
+            }
+        }
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        // New Column for additional fields
+        Column(modifier = Modifier.fillMaxWidth()) {
+            OutlinedTextField(
+                value = ticketLine1,
+                onValueChange = { ticketLine1 = it },
+                // Removed weight() and added fillMaxWidth() for proper behavior
+                modifier = Modifier.fillMaxWidth(),
+                singleLine = true,
+                placeholder = { Text("Enter Ticket Line 1") },
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedContainerColor = Color.White,
+                    unfocusedContainerColor = Color.White,
+                    focusedBorderColor = Color.Gray,
+                    unfocusedBorderColor = Color.LightGray
+                ),
+                shape = RoundedCornerShape(8.dp)
+            )
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            OutlinedTextField(
+                value = ticketLine2,
+                onValueChange = { ticketLine2 = it },
+                // Removed weight() and added fillMaxWidth()
+                modifier = Modifier.fillMaxWidth(),
+                singleLine = true,
+                placeholder = { Text("Enter Ticket Line 2") },
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedContainerColor = Color.White,
+                    unfocusedContainerColor = Color.White,
+                    focusedBorderColor = Color.Gray,
+                    unfocusedBorderColor = Color.LightGray
+                ),
+                shape = RoundedCornerShape(8.dp)
+            )
+        }
+    }
+}
+fun handleGetCurrentBookingByParkingArea(
+    context: Context,
     parkingAreaId: Int,
     navController: NavController,
-    context: Context
+    repository: BookingRepository
 ) {
-    try {
-        val bookedSlots: MutableList<BookingData> = mutableListOf()
-        val api = RetrofitService.getRetrofit().create(ParkingSlotApi::class.java)
+    repository.getCurrentBookingByParkingArea(parkingAreaId) { result ->
+        result.onSuccess { bookedSlots ->
+            val json = Uri.encode(Gson().toJson(bookedSlots))
+            navController.navigate("${Routes.editBooking}/$json/$parkingAreaId")
 
-        api.getBookingByParkingArea(parkingAreaId)
-            .enqueue(object : Callback<BookingResponse> {
-                override fun onResponse(
-                    call: Call<BookingResponse>,
-                    response: Response<BookingResponse>
-                ) {
-                    if (response.isSuccessful && response.body() != null) {
-                        if (response.body()?.status == 0) {
-                            response.body()?.data?.let { bookedSlots.addAll(it) }
-                            val json = Uri.encode(Gson().toJson(bookedSlots))
-                            navController.navigate("${Routes.editBooking}/$json/$parkingAreaId")
-                        } else {
-                            val json = Uri.encode(Gson().toJson(emptyList<BookingData>()))
-                            navController.navigate(Routes.editBooking + "/$json/" + parkingAreaId)
-                        }
-                    } else {
-                        Toast.makeText(context, "Failed to find data", Toast.LENGTH_SHORT).show()
-                    }
-                }
+            if (bookedSlots.isEmpty()) {
+                Toast.makeText(context, "No bookings available", Toast.LENGTH_SHORT).show()
+            }
+        }
+        result.onFailure { error ->
+            val json = Uri.encode(Gson().toJson(emptyList<BookingData>()))
+            navController.navigate("${Routes.editBooking}/$json/$parkingAreaId")
+            Toast.makeText(
+                context,
+                error.message ?: "Failed to find data",
+                Toast.LENGTH_SHORT
+            ).show()
+        }
+    }
+}
 
-                override fun onFailure(call: Call<BookingResponse>, t: Throwable) {
-                    Toast.makeText(context, "Error: ${t.message}", Toast.LENGTH_SHORT).show()
-                }
-            })
+fun handleEditUsersClick(
+    parkingAreaId: String,
+    context: Context,
+    navController: NavController,
+    repository: ParkingAreaRepository
+) {
+    repository.findParkingAreaById(parkingAreaId) { result ->
+        result.onSuccess { response ->
+            val json = Uri.encode(Gson().toJson(response.data))
+            navController.navigate("${Routes.editUsers}/$json")
+        }
 
-
-    } catch (e: Exception) {
-        Toast.makeText(context, "Exception occurred: ${e.message}", Toast.LENGTH_SHORT).show()
+        result.onFailure { error ->
+            Toast.makeText(
+                context,
+                "Data not found",
+                Toast.LENGTH_SHORT
+            ).show()
+        }
     }
 }
 
 
-fun handleEditUsersClick(parkingAreaId: String?, context: Context, navController: NavController) {
-    val api = RetrofitService.getRetrofit().create(ParkingSlotApi::class.java)
-    api.findParkingAreaById(parkingAreaId = Integer.parseInt(parkingAreaId))
-        .enqueue(object : Callback<ParkingAreaResponse> {
-            override fun onResponse(
-                call: Call<ParkingAreaResponse>,
-                response: Response<ParkingAreaResponse>
-            ) {
-                if (response.body() != null) {
-                    if (response.body()?.status == 0) {
-                        val gson = Gson()
-                        val json = Uri.encode(gson.toJson(response.body()?.data))
-                        navController.navigate(Routes.editUsers + "/$json")
-                    } else {
-                        Toast.makeText(context, "Data not found ", Toast.LENGTH_SHORT).show()
-                    }
-                } else {
-                    Toast.makeText(context, "Data not found", Toast.LENGTH_SHORT).show()
-                }
-            }
+fun handleEditSlotsClick(
+    parkingAreaId: String,
+    context: Context,
+    navController: NavController,
+    repository: ParkingAreaRepository
+) {
+    repository.findParkingAreaById(parkingAreaId) { result ->
+        result.onSuccess { response ->
+            val json = Uri.encode(Gson().toJson(response.data))
+            navController.navigate("${Routes.editSlots}/$json")
+        }
 
-            override fun onFailure(call: Call<ParkingAreaResponse>, t: Throwable) {
-                Toast.makeText(context, "Error: ${t.message}", Toast.LENGTH_SHORT).show()
-            }
-        })
-}
-
-fun handleEditSlotsClick(parkingAreaId: String?, context: Context, navController: NavController) {
-    val api = RetrofitService.getRetrofit().create(ParkingSlotApi::class.java)
-    api.findParkingAreaById(parkingAreaId = Integer.parseInt(parkingAreaId))
-        .enqueue(object : Callback<ParkingAreaResponse> {
-            override fun onResponse(
-                call: Call<ParkingAreaResponse>,
-                response: Response<ParkingAreaResponse>
-            ) {
-                if (response.body() != null) {
-                    if (response.body()?.status == 0) {
-                        val gson = Gson()
-                        val json = Uri.encode(gson.toJson(response.body()?.data))
-                        navController.navigate(Routes.editSlots + "/$json")
-                    } else {
-                        Toast.makeText(context, "Data not found ", Toast.LENGTH_SHORT).show()
-                    }
-                } else {
-                    Toast.makeText(context, "Data not found", Toast.LENGTH_SHORT).show()
-                }
-            }
-
-            override fun onFailure(call: Call<ParkingAreaResponse>, t: Throwable) {
-                Toast.makeText(context, "Error: ${t.message}", Toast.LENGTH_SHORT).show()
-            }
-        })
+        result.onFailure { error ->
+            Toast.makeText(
+                context,
+                "Data not found",
+                Toast.LENGTH_SHORT
+            ).show()
+        }
+    }
 }
 
 
-fun changeNameOftheParkingArea(name: String, parkingAreaId: String?, context: Context) {
-
-    // Safely handle the parkingAreaId to prevent crashes from a null or invalid value.
-    val id: Int? = parkingAreaId?.toIntOrNull()
-
+fun handleChangeNameAndTicketDetails(
+    parkingAreaName: String,
+    ticketLine1:String,
+    ticketLine2: String,
+    parkingAreaId: String?,
+    context: Context,
+    repository: ParkingAreaRepository
+) {
+    val id = parkingAreaId?.toIntOrNull()
     if (id == null) {
         Toast.makeText(context, "Invalid Parking Area ID", Toast.LENGTH_SHORT).show()
-        return // Exit the function if the ID is invalid
+        return
     }
 
-    val api = RetrofitService.getRetrofit().create(ParkingSlotApi::class.java)
-
-    api.updateParkingAreaName(id = id, newName = name)
-        .enqueue(object : Callback<ParkingAreaResponse> {
-            override fun onResponse(
-                call: Call<ParkingAreaResponse>,
-                response: Response<ParkingAreaResponse>
-            ) {
-                if (response.isSuccessful) {
-                    val body = response.body()
-                    if (body != null && body.status == 0) {
-                        Toast.makeText(context, "Updated", Toast.LENGTH_SHORT).show()
-                    } else {
-                        Toast.makeText(context, "" + body?.message, Toast.LENGTH_SHORT).show()
-                    }
-                } else {
-                    Toast.makeText(context, "API Error: ${response.code()}", Toast.LENGTH_SHORT)
-                        .show()
-                }
-            }
-
-            override fun onFailure(call: Call<ParkingAreaResponse>, t: Throwable) {
-                Toast.makeText(context, "Error: ${t.message}", Toast.LENGTH_SHORT).show()
-            }
-        })
+    repository.updateParkingAreaBasicDetails(id, parkingAreaName,ticketLine1,ticketLine2) { result ->
+        result.onSuccess {
+            Toast.makeText(context, "Updated", Toast.LENGTH_SHORT).show()
+        }
+        result.onFailure { error ->
+            Toast.makeText(
+                context,
+                error.message ?: "Failed to update parking area",
+                Toast.LENGTH_SHORT
+            ).show()
+        }
+    }
 }
 
 
@@ -374,6 +460,8 @@ fun EditParkingAreaPreview() {
         navController = dummyNavController,
         modifier = Modifier.fillMaxSize(),
         parkingAreaId = "2",
-        parkingAreaName = "abcde"
+        parkingAreaName = "abcde",
+        ticketLine1 = "line1",
+        ticketLine2 = "line2"
     )
 }

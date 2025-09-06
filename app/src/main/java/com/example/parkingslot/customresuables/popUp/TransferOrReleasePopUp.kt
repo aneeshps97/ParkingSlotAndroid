@@ -26,6 +26,7 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -43,16 +44,8 @@ fun TransferOrReleasePopup(
 ) {
     if (showDialog) {
         Dialog(onDismissRequest = onDismiss) {
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(24.dp)
-                    .background(Color.White, shape = RoundedCornerShape(12.dp))
-                    .border(
-                        width = 2.dp,
-                        color = Color.Black,
-                        shape = RoundedCornerShape(10.dp)
-                    )
+            Box(contentAlignment = Alignment.Center,modifier=Modifier.padding(10.dp)
+                .background(Color.White, shape = RoundedCornerShape(16.dp))
             ) {
                 Column(
                     verticalArrangement = Arrangement.spacedBy(5.dp),

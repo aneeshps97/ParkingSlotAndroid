@@ -39,6 +39,7 @@ import com.example.parkingslot.mainpages.background.PageBackground
 import com.example.parkingslot.webConnect.dto.parkingArea.ParkingAreaResponse
 import com.example.parkingslot.webConnect.dto.user.User
 import com.example.parkingslot.webConnect.dto.user.UserResponse
+import com.example.parkingslot.webConnect.repository.UserRepository
 import com.example.parkingslot.webConnect.retrofit.ParkingSlotApi
 import com.example.parkingslot.webConnect.retrofit.RetrofitService
 import com.google.gson.Gson
@@ -60,6 +61,7 @@ fun AddUsersToParkingArea(
     val context = LocalContext.current
     val showConfirmationDialog = remember { mutableStateOf(false) }
     val user = remember { mutableStateOf<User?>(null) }
+    var userRepository = UserRepository()
     ConfirmPopUp(
         text1 = user.value?.name ?: "",
         text2 = "sure you want to add this user?",
@@ -102,7 +104,7 @@ fun AddUsersToParkingArea(
                 // when the + button is clicked an api should trigger and fetch the data of the user based on the email
                 // if not found we will show a popup saying user not found we can have confirm popup for that
                 InputTextFieldWithButton(email, onValueChange = { email = it }, {
-                    handleFindingUserByEmail(context,email,listOfUsers,showConfirmationDialog,user)
+                    handleFindingUserByEmail(context,email,listOfUsers,showConfirmationDialog,user,userRepository)
                 },"Email")
                 ScrollableBoxContentForUsers(listOfUsers, onRemove = { index ->
                     listOfUsers.removeAt(index)
@@ -185,34 +187,33 @@ fun ScrollableBoxContentForUsers(listofData: List<User>,
 }
 
 
+// UI-level handler
 fun handleFindingUserByEmail(
     context: Context,
-    email: String, listOfUsers: MutableList<User>,
+    email: String,
+    listOfUsers: MutableList<User>,
     showConfirmationDialog: MutableState<Boolean>,
-    userState: MutableState<User?>
+    userState: MutableState<User?>,
+    repository: UserRepository
 ) {
-    val api = RetrofitService.getRetrofit().create(ParkingSlotApi::class.java)
-    api.findUserByEmail(email=email).enqueue(object : Callback<UserResponse> {
-        override fun onResponse(
-            call: Call<UserResponse>,
-            response: Response<UserResponse>
-        ) {
-            if (response.body() != null && response.body()?.status == 0) {
-                val userName = response.body()?.data?.name
-                val userId = response.body()?.data?.userId
-                val user = User(id = userId, name = userName.toString())
-                userState.value = user
-                showConfirmationDialog.value = true
-
-            } else {
-                Toast.makeText(
-                    context, "" + response.body()?.message, Toast.LENGTH_SHORT
-                ).show()
-            }
+    repository.findUserByEmail(email) { result ->
+        result.onSuccess { response ->
+            val data = response.data
+            val user = User(
+                id = data?.userId,
+                name = data?.name.orEmpty()
+            )
+            userState.value = user
+            showConfirmationDialog.value = true
         }
-        override fun onFailure(call: Call<UserResponse>, t: Throwable) {
-            Toast.makeText(context, "Error: ${t.message}", Toast.LENGTH_SHORT).show()
-        }
-    })
 
+        result.onFailure { error ->
+            Toast.makeText(
+                context,
+                error.message ?: "Failed to fetch user",
+                Toast.LENGTH_SHORT
+            ).show()
+        }
+    }
 }
+

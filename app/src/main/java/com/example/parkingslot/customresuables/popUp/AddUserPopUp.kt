@@ -1,4 +1,5 @@
 package com.example.parkingslot.customresuables.popUp
+
 import android.content.Context
 import android.util.Log
 import android.widget.Toast
@@ -45,6 +46,7 @@ import com.example.parkingslot.webConnect.dto.slot.SlotData
 import com.example.parkingslot.webConnect.dto.user.User
 import com.example.parkingslot.webConnect.dto.user.UserData
 import com.example.parkingslot.webConnect.dto.user.UserResponse
+import com.example.parkingslot.webConnect.repository.UserRepository
 import com.example.parkingslot.webConnect.retrofit.ParkingSlotApi
 import com.example.parkingslot.webConnect.retrofit.RetrofitService
 import retrofit2.Call
@@ -58,9 +60,10 @@ fun AddUserPopUp(
     navController: NavController,
     onUserAdded: (User) -> Unit // Callback when a user is selected
 ) {
-    val context:Context = LocalContext.current
+    val context: Context = LocalContext.current
     val showConfirmationDialog = remember { mutableStateOf(false) }
     val user = remember { mutableStateOf<User?>(null) }
+    var userRepository = UserRepository()
     ConfirmPopUp(
         text1 = user.value?.name ?: "",
         text2 = "sure you want to add this user?",
@@ -68,7 +71,6 @@ fun AddUserPopUp(
         onDismiss = { showConfirmationDialog.value = false },
         onConfirm = {
             user.value?.let { safeUser ->
-                Toast.makeText(context, "Confirm clicked: ${safeUser.name}", Toast.LENGTH_SHORT).show()
                 onUserAdded(safeUser)
             }
             showConfirmationDialog.value = false
@@ -106,8 +108,14 @@ fun AddUserPopUp(
 
                     // Text box with initial value
                     InputTextFieldWithButton(email, onValueChange = { email = it }, {
-                        handleFindingUserByEmailForEditingUser(context,email,showConfirmationDialog,user)
-                    },"Email")
+                        handleFindingUserByEmailForEditingUser(
+                            context,
+                            email,
+                            showConfirmationDialog,
+                            user,
+                            userRepository
+                        )
+                    }, "Email")
                     // Cancel button
                     TextButton(
                         onClick = onDismiss,
@@ -125,30 +133,26 @@ fun handleFindingUserByEmailForEditingUser(
     context: Context,
     email: String,
     showConfirmationDialog: MutableState<Boolean>,
-    userState: MutableState<User?>
+    userState: MutableState<User?>,
+    repository: UserRepository
 ) {
-    val api = RetrofitService.getRetrofit().create(ParkingSlotApi::class.java)
-    api.findUserByEmail(email=email).enqueue(object : Callback<UserResponse> {
-        override fun onResponse(
-            call: Call<UserResponse>,
-            response: Response<UserResponse>
-        ) {
-            if (response.body() != null && response.body()?.status == 0) {
-                val userName = response.body()?.data?.name
-                val userId = response.body()?.data?.userId
-                val user = User(id = userId, name = userName.toString())
-                userState.value = user
-                showConfirmationDialog.value = true
-
-            } else {
-                Toast.makeText(
-                    context, "" + response.body()?.message, Toast.LENGTH_SHORT
-                ).show()
-            }
+    repository.findUserByEmail(email) { result ->
+        result.onSuccess { response ->
+            val data = response.data
+            val user = User(
+                id = data?.userId,
+                name = data?.name.orEmpty()
+            )
+            userState.value = user
+            showConfirmationDialog.value = true
         }
-        override fun onFailure(call: Call<UserResponse>, t: Throwable) {
-            Toast.makeText(context, "Error: ${t.message}", Toast.LENGTH_SHORT).show()
-        }
-    })
 
+        result.onFailure { error ->
+            Toast.makeText(
+                context,
+                error.message ?: "Failed to fetch user",
+                Toast.LENGTH_SHORT
+            ).show()
+        }
+    }
 }

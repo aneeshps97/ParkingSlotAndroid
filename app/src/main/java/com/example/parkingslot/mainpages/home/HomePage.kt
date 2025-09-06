@@ -42,6 +42,7 @@ import com.example.parkingslot.customresuables.confirm.ConfirmPopUp
 import com.example.parkingslot.mainpages.background.PageBackground
 import com.example.parkingslot.webConnect.dto.parkingArea.ParkingAreaResponse
 import com.example.parkingslot.webConnect.dto.user.UserResponse
+import com.example.parkingslot.webConnect.repository.UserRepository
 import com.example.parkingslot.webConnect.retrofit.ParkingSlotApi
 import com.example.parkingslot.webConnect.retrofit.RetrofitService
 import com.google.gson.Gson
@@ -58,6 +59,7 @@ fun HomePage(navController: NavController, modifier: Modifier = Modifier) {
     var showConfirmationDialog by remember { mutableStateOf(false) }
 
     var parkingAreas: List<ParkingAreaResponse> = ArrayList<ParkingAreaResponse>()
+    var userRepository = UserRepository()
 
     ConfirmPopUp(
         text1 = "Hi $name",
@@ -141,34 +143,36 @@ fun HomePage(navController: NavController, modifier: Modifier = Modifier) {
                         )
                     }, label = "VIEW"
                 ) {
-                    val api = RetrofitService.getRetrofit().create(ParkingSlotApi::class.java)
-                    val call: Call<UserResponse> = api.findUserDetailsById(userId)
-                    call.enqueue(object : Callback<UserResponse> {
-                        override fun onResponse(
-                            call: Call<UserResponse>,
-                            response: Response<UserResponse>
-                        ) {
-                            if (response.body() != null && response.body()?.status == 0) {
-                                val parkingAreas = response.body()?.data?.parkingAreas
-                                navController.currentBackStackEntry?.savedStateHandle?.set("parkingAreasOfUser", parkingAreas)
-                                navController.navigate(Routes.viewYourParkingAreas)
 
-                            } else {
-                                Toast.makeText(
-                                    context, "No parking area assigned", Toast.LENGTH_SHORT
-                                ).show()
-                            }
-                        }
+                    handleFindingUserDetailsById(context,userId,navController,userRepository)
 
-                        override fun onFailure(
-                            call: Call<UserResponse>, t: Throwable
-                        ) {
-                            Toast.makeText(context, "Error: ${t.message}", Toast.LENGTH_SHORT)
-                                .show()
-                        }
-                    })
                 }
             }
+        }
+    }
+}
+
+fun handleFindingUserDetailsById(
+    context: Context,
+    userId: Int,
+    navController: NavController,
+    repository: UserRepository
+) {
+    repository.findUserDetailsByIdRepository(userId) { result ->
+        result.onSuccess { userResponse ->
+            val parkingAreas = userResponse.data?.parkingAreas
+            navController.currentBackStackEntry?.savedStateHandle?.set(
+                "parkingAreasOfUser",
+                parkingAreas
+            )
+            navController.navigate(Routes.viewYourParkingAreas)
+        }
+        result.onFailure { error ->
+            Toast.makeText(
+                context,
+                error.message ?: "Failed to fetch user details",
+                Toast.LENGTH_SHORT
+            ).show()
         }
     }
 }

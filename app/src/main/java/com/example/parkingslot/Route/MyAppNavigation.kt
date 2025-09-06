@@ -22,8 +22,6 @@ import com.example.parkingslot.mainpages.ParkingArea.parkingArea
 import com.example.parkingslot.mainpages.availableslot.AvailableSlot
 import com.example.parkingslot.mainpages.home.HomePage
 import com.example.parkingslot.mainpages.parkingTicket.ParkingTicket
-import com.example.parkingslot.mainpages.releaseSlot.ReleaseSlot
-import com.example.parkingslot.mainpages.transferSlot.TransferSlot
 import com.example.parkingslot.mainpages.userauth.Login
 import com.example.parkingslot.mainpages.userauth.SignUp
 import com.example.parkingslot.sharedView.BookingViewModel
@@ -82,27 +80,26 @@ fun MyAppNavigation() {
                 )
             }
             //parking area page
-            composable(Routes.parkingArea + "/{parkingAreaId}/{parkingAreaName}/{adminId}") {
+            composable(Routes.parkingArea + "/{parkingAreaId}/{parkingAreaName}/{adminId}/{ticketLine1}/{ticketLine2}") {
                 val parkingAreaId = it.arguments?.getString("parkingAreaId")
                 val parkingAreaName = it.arguments?.getString("parkingAreaName")
+                val ticketLine1 = it.arguments?.getString("ticketLine1")
+                val ticketLine2 = it.arguments?.getString("ticketLine2")
                 val adminId = it.arguments?.getString("adminId")
                 parkingArea(
                     navController,
                     parkingAreaId = parkingAreaId ?: "0",
                     parkingAreaName = parkingAreaName?:"",
-                    adminId = adminId?:"-1"
+                    adminId = adminId?:"-1",
+                    ticketLine2 = ticketLine2?:"",
+                    ticketLine1 = ticketLine1?:""
                 )
             }
 
             //showing parking areas
             composable(Routes.viewYourParkingAreas) {
-                val parkingAreasOfUser = navController.previousBackStackEntry
-                    ?.savedStateHandle
-                    ?.get<List<ParkingAreaData>>("parkingAreasOfUser")
-                    ?: emptyList()
                 ViewYourParkingAreas(
-                    navController = navController,
-                    parkingAreas = parkingAreasOfUser
+                    navController = navController
                 )
             }
 
@@ -156,9 +153,11 @@ fun MyAppNavigation() {
 
             //showing the current ticket
 
-            composable(Routes.parkingTicket + "/{parkingTicketNumber}") {
+            composable(Routes.parkingTicket + "/{parkingTicketNumber}/{ticketLine1}/{ticketLine2}") {
                 val parkingTicketNumber = it.arguments?.getString("parkingTicketNumber")
-                ParkingTicket(parkingTicketNumber = parkingTicketNumber ?: "00000")
+                val ticketLine1 = it.arguments?.getString("ticketLine1")
+                val ticketLine2 = it.arguments?.getString("ticketLine2")
+                ParkingTicket(parkingTicketNumber = parkingTicketNumber ?: "00000",ticketLine1=ticketLine1,ticketLine2=ticketLine2)
             }
 
             //showing available slots
@@ -251,27 +250,17 @@ fun MyAppNavigation() {
 
             }
 
-            // for the popup to transfer the slot
-            composable(Routes.transferSlot) {
-                TransferSlot(
-                    navController = navController
-                )
-            }
-
-            //for releasing the slot
-            composable(Routes.releaseSlot) {
-                ReleaseSlot(
-                    navController = navController
-                )
-            }
-
-            composable(Routes.editParkingArea + "/{parkingAreaId}/{parkingAreaName}") {
+            composable(Routes.editParkingArea + "/{parkingAreaId}/{parkingAreaName}/{ticketLine1}/{ticketLine2}") {
                 val parkingAreaId = it.arguments?.getString("parkingAreaId")
                 val parkingAreaName = it.arguments?.getString("parkingAreaName")
+                val ticketLine1 = it.arguments?.getString("ticketLine1")
+                val ticketLine2 = it.arguments?.getString("ticketLine2")
                 EditParkingArea(
                     parkingAreaId = parkingAreaId,
                     parkingAreaName = parkingAreaName,
-                    navController = navController
+                    navController = navController,
+                    ticketLine1 = ticketLine1,
+                    ticketLine2 = ticketLine2
 
                 )
             }
