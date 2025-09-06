@@ -100,7 +100,8 @@ class ParkingAreaRepository {
                     if (response.isSuccessful && body != null && body.status == 0) {
                         callback(Result.success(body))
                     } else {
-                        callback(Result.failure(Exception(body?.message ?: "Update failed")))
+                        val errorMsg = response.body()?.message
+                        callback(Result.failure(Exception(errorMsg)))
                     }
                 }
 
@@ -127,10 +128,11 @@ class ParkingAreaRepository {
                     if (response.isSuccessful && body != null && body.status == 0) {
                         callback(Result.success(body))
                     } else {
+                        val errorMsg = response.body()?.message
                         callback(
                             Result.failure(
                                 Exception(
-                                    body?.message ?: "No free slots available"
+                                    errorMsg
                                 )
                             )
                         )
@@ -159,7 +161,8 @@ class ParkingAreaRepository {
                     if (response.isSuccessful && body != null) {
                         callback(Result.success(body))
                     } else {
-                        callback(Result.failure(Exception("Failed to release slot")))
+                        val errorMsg = response.body()?.message
+                        callback(Result.failure(Exception(errorMsg)))
                     }
                 }
 
@@ -187,7 +190,14 @@ class ParkingAreaRepository {
                         if (body.status == 0) {
                             callback(Result.success(body))
                         } else {
-                            callback(Result.failure(Exception(body.message ?: "Failed to book slot")))
+                            val errorMsg = response.body()?.message
+                            callback(
+                                Result.failure(
+                                    Exception(
+                                        errorMsg
+                                    )
+                                )
+                            )
                         }
                     } else {
                         callback(Result.failure(Exception("Invalid response from server")))
@@ -199,10 +209,6 @@ class ParkingAreaRepository {
                 }
             })
     }
-
-
-
-
 
 
 }

@@ -50,16 +50,25 @@ fun parkingArea(
     val context = LocalContext.current
     val sharedPref = remember { context.getSharedPreferences("loginPref", Context.MODE_PRIVATE) }
     val userId = sharedPref.getInt("user_id", 1)
-    var showConfirmationDialog by remember { mutableStateOf(false) }
+    var showConfirmationDialogForDelete by remember { mutableStateOf(false) }
     var bookingRepository = BookingRepository()
     var parkingAreaRepository = ParkingAreaRepository()
 
     PageBackground {
         Box(modifier = Modifier.fillMaxSize()) {
             ConfirmPopUp(
-                showDialog = showConfirmationDialog,
-                onDismiss = { showConfirmationDialog = false },
-                onConfirm = { /* Confirmation logic */ }
+                text1= "Delete $parkingAreaName",
+                text2 = "Are you sure ?",
+                showDialog = showConfirmationDialogForDelete,
+                onDismiss = { showConfirmationDialogForDelete = false },
+                onConfirm = {
+                    handleDeleteParkingArea(
+                        Integer.parseInt(parkingAreaId),
+                        context,
+                        navController
+                    )
+                    showConfirmationDialogForDelete = false
+                }
             )
             Box(
                 modifier = Modifier.fillMaxSize().padding(20.dp),
@@ -154,11 +163,7 @@ fun parkingArea(
                                     "Delete",
                                     icon = Icons.Default.Delete,
                                     onClick = {
-                                        handleDeleteParkingArea(
-                                            Integer.parseInt(parkingAreaId),
-                                            context,
-                                            navController
-                                        )
+                                        showConfirmationDialogForDelete = true
                                     })
                                 Spacer(modifier = Modifier.height(16.dp)) // Added space between buttons
                                 DashboardButton(

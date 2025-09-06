@@ -1,4 +1,5 @@
 package com.example.parkingslot.customresuables.popUp
+
 import android.content.Context
 import android.util.Log
 import android.widget.Toast
@@ -59,7 +60,7 @@ fun AddUserPopUp(
     navController: NavController,
     onUserAdded: (User) -> Unit // Callback when a user is selected
 ) {
-    val context:Context = LocalContext.current
+    val context: Context = LocalContext.current
     val showConfirmationDialog = remember { mutableStateOf(false) }
     val user = remember { mutableStateOf<User?>(null) }
     var userRepository = UserRepository()
@@ -70,7 +71,6 @@ fun AddUserPopUp(
         onDismiss = { showConfirmationDialog.value = false },
         onConfirm = {
             user.value?.let { safeUser ->
-                Toast.makeText(context, "Confirm clicked: ${safeUser.name}", Toast.LENGTH_SHORT).show()
                 onUserAdded(safeUser)
             }
             showConfirmationDialog.value = false
@@ -108,8 +108,14 @@ fun AddUserPopUp(
 
                     // Text box with initial value
                     InputTextFieldWithButton(email, onValueChange = { email = it }, {
-                        handleFindingUserByEmailForEditingUser(context,email,showConfirmationDialog,user,userRepository)
-                    },"Email")
+                        handleFindingUserByEmailForEditingUser(
+                            context,
+                            email,
+                            showConfirmationDialog,
+                            user,
+                            userRepository
+                        )
+                    }, "Email")
                     // Cancel button
                     TextButton(
                         onClick = onDismiss,

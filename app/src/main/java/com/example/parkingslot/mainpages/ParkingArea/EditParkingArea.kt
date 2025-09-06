@@ -5,15 +5,18 @@ import android.net.Uri
 import android.util.Log
 import android.widget.Toast
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AddCircleOutline
 import androidx.compose.material.icons.filled.ArrowForward
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -46,6 +49,7 @@ import retrofit2.Response
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.OutlinedTextFieldDefaults
+import androidx.compose.ui.draw.shadow
 import com.example.parkingslot.webConnect.dto.booking.BookingData
 import com.example.parkingslot.webConnect.dto.booking.BookingResponse
 import com.example.parkingslot.webConnect.repository.BookingRepository
@@ -58,7 +62,6 @@ fun EditParkingArea(
     parkingAreaId: String?,
     parkingAreaName: String?
 ) {
-    var name by remember { mutableStateOf(parkingAreaName) }
     val context: Context = LocalContext.current
     var parkingAreaRepository: ParkingAreaRepository = ParkingAreaRepository()
     var bookingRepository = BookingRepository()
@@ -69,9 +72,13 @@ fun EditParkingArea(
             Box(modifier = Modifier.fillMaxSize()) {
                 Text(
                     "EDIT",
+
                     modifier = Modifier
                         .align(Alignment.TopCenter)
-                        .padding(top = 16.dp)
+                        .padding(top = 16.dp),
+                    style = MaterialTheme.typography.headlineSmall.copy(
+                        fontWeight = FontWeight.SemiBold
+                    )
                 )
 
                 Box(
@@ -81,53 +88,36 @@ fun EditParkingArea(
                         .padding(16.dp)
                 ) {
                     Column {
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(8.dp)
-                        ) {
-                            Box(modifier = Modifier.weight(1f)) {
-                                OutlinedTextField(
-                                    value = name.toString(),
-                                    onValueChange = { name = it },
-                                    modifier = modifier,
-                                    colors = OutlinedTextFieldDefaults.colors(
-                                        focusedBorderColor = Color.DarkGray,
-                                        unfocusedBorderColor = Color.Black,
-                                    )
-                                )
-                            }
 
-                            Button(
-                                onClick = {
-                                    handleChangeNameOfParkingArea(
-                                        name.toString(),
-                                        parkingAreaId,
-                                        context,
-                                        parkingAreaRepository
-                                    )
-                                },
-                                modifier = Modifier
-                                    .height(56.dp) // Match text field height
-                                    .align(Alignment.CenterVertically),
-                                shape = RoundedCornerShape(8.dp),
-                                colors = ButtonDefaults.buttonColors(
-                                    containerColor = Color.Black,
-                                    contentColor = Color.White
+                        Box(
+                            modifier = Modifier
+                                .shadow(
+                                    elevation = 8.dp, // Adjust this value to change the shadow depth
+                                    shape = RoundedCornerShape(16.dp)
                                 )
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Default.ArrowForward,
-                                    contentDescription = "Edit"
-                                )
-                            }
+                                .background(Color.White, shape = RoundedCornerShape(16.dp))
+                        ) {
+
+                            //updating the name
+                            ParkingAreaNameUpdater(
+                                parkingAreaName.toString(),
+                                parkingAreaId = parkingAreaId.toString(),
+                                context = context,
+                                parkingAreaRepository = parkingAreaRepository,
+                            )
                         }
+
 
                         Spacer(modifier = Modifier.height(20.dp)) // for horizontal spacing
 
                         Button(
                             onClick = {
-                                handleEditSlotsClick(parkingAreaId.toString(), context, navController,parkingAreaRepository);
+                                handleEditSlotsClick(
+                                    parkingAreaId.toString(),
+                                    context,
+                                    navController,
+                                    parkingAreaRepository
+                                );
                             },
                             modifier = Modifier
                                 .height(60.dp)
@@ -238,6 +228,80 @@ fun EditParkingArea(
     }
 }
 
+
+
+@Composable
+fun ParkingAreaNameUpdater(parkingAreaName: String,parkingAreaId: String,context:Context,parkingAreaRepository: ParkingAreaRepository) {
+    // State to hold the value of the text field
+    var parkingAreaName by remember { mutableStateOf(parkingAreaName) }
+
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(16.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        // "Parking Area Name" label
+        Text(
+            text = "Update Name",
+            style = MaterialTheme.typography.titleLarge,
+            fontWeight = FontWeight.Bold,
+            modifier = Modifier.align(Alignment.Start)
+        )
+
+        Spacer(modifier = Modifier.height(8.dp))
+
+        // Row containing the text field and button
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            // OutlinedTextField for entering the new name
+            OutlinedTextField(
+                value = parkingAreaName.toString(),
+                onValueChange = { parkingAreaName = it },
+                modifier = Modifier.weight(1f),
+                singleLine = true,
+                placeholder = { Text("Enter new name") },
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedContainerColor = Color.White,
+                    unfocusedContainerColor = Color.White,
+                    focusedBorderColor = Color.Gray,
+                    unfocusedBorderColor = Color.LightGray
+                ),
+                shape = RoundedCornerShape(8.dp)
+            )
+
+            // "Update" Button
+            Button(
+                onClick = {
+                    handleChangeNameOfParkingArea(
+                        parkingAreaName.toString(),
+                        parkingAreaId.toString(),
+                        context,
+                        parkingAreaRepository
+                    )
+                },
+                // Custom colors to match the blue button in the image
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = Color.DarkGray, // A shade of Google Blue
+                    contentColor = Color.White
+                ),
+                shape = RoundedCornerShape(8.dp),
+                modifier = Modifier.height(56.dp)
+            ) {
+                // The icon is now the only content to ensure it's always visible
+                Icon(
+                    imageVector = Icons.Default.ArrowForward,
+                    contentDescription = "Update",
+                    modifier = Modifier.size(24.dp) // Adjusted size for visibility
+                )
+            }
+        }
+    }
+}
+
 fun handleGetCurrentBookingByParkingArea(
     context: Context,
     parkingAreaId: Int,
@@ -280,7 +344,7 @@ fun handleEditUsersClick(
         result.onFailure { error ->
             Toast.makeText(
                 context,
-                 "Data not found",
+                "Data not found",
                 Toast.LENGTH_SHORT
             ).show()
         }
@@ -303,7 +367,7 @@ fun handleEditSlotsClick(
         result.onFailure { error ->
             Toast.makeText(
                 context,
-                 "Data not found",
+                "Data not found",
                 Toast.LENGTH_SHORT
             ).show()
         }

@@ -28,9 +28,7 @@ class UserRepository() {
                 if (response.isSuccessful && body?.status == 0) {
                     callback(Result.success(body))
                 } else {
-                    val errorMsg = response.errorBody()?.string()?.let {
-                        JSONObject(it).getString("message")
-                    } ?: "Login failed"
+                    val errorMsg = response.body()?.message
                     callback(Result.failure(Exception(errorMsg)))
                 }
             }
@@ -59,9 +57,7 @@ class UserRepository() {
                 if (response.isSuccessful && body?.status == 0 && body.data != null) {
                     callback(Result.success(body))
                 } else {
-                    val errorMsg = response.errorBody()?.string()?.let {
-                        JSONObject(it).getString("message")
-                    } ?: "Signup failed"
+                    val errorMsg = response.body()?.message
                     callback(Result.failure(Exception(errorMsg)))
                 }
             }
@@ -92,7 +88,8 @@ class UserRepository() {
                         if (body.status == 0) {
                             callback(Result.success(body))
                         } else {
-                            callback(Result.failure(Exception(body.message)))
+                            val errorMsg = response.body()?.message
+                            callback(Result.failure(Exception(errorMsg)))
                         }
                     } else {
                         callback(Result.failure(Exception("User not found")))

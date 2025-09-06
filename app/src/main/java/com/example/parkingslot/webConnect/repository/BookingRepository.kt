@@ -28,7 +28,8 @@ class BookingRepository {
                     if (response.isSuccessful && body != null) {
                         callback(Result.success(body))
                     } else {
-                        callback(Result.failure(Exception("No booking found for given date")))
+                        val errorMsg = response.body()?.message
+                        callback(Result.failure(Exception(errorMsg)))
                     }
                 }
 
@@ -56,7 +57,8 @@ class BookingRepository {
                     if (response.isSuccessful && body != null && body.status == 0) {
                         callback(Result.success(body.data ?: emptyList()))
                     } else {
-                        callback(Result.failure(Exception(body?.message ?: "No booked slots")))
+                        val errorMsg = response.body()?.message
+                        callback(Result.failure(Exception(errorMsg)))
                     }
                 }
 
@@ -83,7 +85,8 @@ class BookingRepository {
                     if (response.isSuccessful && body != null && body.status == 0) {
                         callback(Result.success(body.data ?: emptyList()))
                     } else {
-                        callback(Result.failure(Exception(body?.message ?: "No bookings found")))
+                        val errorMsg = response.body()?.message
+                        callback(Result.failure(Exception(errorMsg)))
                     }
                 }
 
