@@ -49,6 +49,7 @@ import retrofit2.Response
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.OutlinedTextFieldDefaults
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.draw.shadow
 import com.example.parkingslot.webConnect.dto.booking.BookingData
 import com.example.parkingslot.webConnect.dto.booking.BookingResponse
@@ -60,7 +61,9 @@ fun EditParkingArea(
     navController: NavController,
     modifier: Modifier = Modifier,
     parkingAreaId: String?,
-    parkingAreaName: String?
+    parkingAreaName: String?,
+    ticketLine1:String?,
+    ticketLine2: String?
 ) {
     val context: Context = LocalContext.current
     var parkingAreaRepository: ParkingAreaRepository = ParkingAreaRepository()
@@ -100,10 +103,12 @@ fun EditParkingArea(
 
                             //updating the name
                             ParkingAreaNameUpdater(
-                                parkingAreaName.toString(),
+                                parkingAreaName=parkingAreaName.toString(),
                                 parkingAreaId = parkingAreaId.toString(),
                                 context = context,
                                 parkingAreaRepository = parkingAreaRepository,
+                                ticketLine1 = ticketLine1.toString(),
+                                ticketLine2=ticketLine2.toString()
                             )
                         }
 
@@ -231,9 +236,11 @@ fun EditParkingArea(
 
 
 @Composable
-fun ParkingAreaNameUpdater(parkingAreaName: String,parkingAreaId: String,context:Context,parkingAreaRepository: ParkingAreaRepository) {
+fun ParkingAreaNameUpdater(parkingAreaName: String,parkingAreaId: String,context:Context,parkingAreaRepository: ParkingAreaRepository, ticketLine1: String, ticketLine2: String) {
     // State to hold the value of the text field
     var parkingAreaName by remember { mutableStateOf(parkingAreaName) }
+    var ticketLine1 by remember { mutableStateOf(ticketLine1) }
+    var ticketLine2 by remember { mutableStateOf(ticketLine2) }
 
     Column(
         modifier = Modifier
@@ -241,9 +248,9 @@ fun ParkingAreaNameUpdater(parkingAreaName: String,parkingAreaId: String,context
             .padding(16.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        // "Parking Area Name" label
+        // "Update Name" label
         Text(
-            text = "Update Name",
+            text = "Update",
             style = MaterialTheme.typography.titleLarge,
             fontWeight = FontWeight.Bold,
             modifier = Modifier.align(Alignment.Start)
@@ -259,7 +266,7 @@ fun ParkingAreaNameUpdater(parkingAreaName: String,parkingAreaId: String,context
         ) {
             // OutlinedTextField for entering the new name
             OutlinedTextField(
-                value = parkingAreaName.toString(),
+                value = parkingAreaName,
                 onValueChange = { parkingAreaName = it },
                 modifier = Modifier.weight(1f),
                 singleLine = true,
@@ -276,16 +283,18 @@ fun ParkingAreaNameUpdater(parkingAreaName: String,parkingAreaId: String,context
             // "Update" Button
             Button(
                 onClick = {
-                    handleChangeNameOfParkingArea(
-                        parkingAreaName.toString(),
-                        parkingAreaId.toString(),
-                        context,
-                        parkingAreaRepository
+                    handleChangeNameAndTicketDetails(
+                        parkingAreaName = parkingAreaName,
+                        ticketLine1 = ticketLine1,
+                        ticketLine2 = ticketLine2,
+                        parkingAreaId = parkingAreaId,
+                        context = context,
+                        repository = parkingAreaRepository
                     )
                 },
                 // Custom colors to match the blue button in the image
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = Color.DarkGray, // A shade of Google Blue
+                    containerColor = Color.DarkGray,
                     contentColor = Color.White
                 ),
                 shape = RoundedCornerShape(8.dp),
@@ -299,9 +308,47 @@ fun ParkingAreaNameUpdater(parkingAreaName: String,parkingAreaId: String,context
                 )
             }
         }
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        // New Column for additional fields
+        Column(modifier = Modifier.fillMaxWidth()) {
+            OutlinedTextField(
+                value = ticketLine1,
+                onValueChange = { ticketLine1 = it },
+                // Removed weight() and added fillMaxWidth() for proper behavior
+                modifier = Modifier.fillMaxWidth(),
+                singleLine = true,
+                placeholder = { Text("Enter Ticket Line 1") },
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedContainerColor = Color.White,
+                    unfocusedContainerColor = Color.White,
+                    focusedBorderColor = Color.Gray,
+                    unfocusedBorderColor = Color.LightGray
+                ),
+                shape = RoundedCornerShape(8.dp)
+            )
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            OutlinedTextField(
+                value = ticketLine2,
+                onValueChange = { ticketLine2 = it },
+                // Removed weight() and added fillMaxWidth()
+                modifier = Modifier.fillMaxWidth(),
+                singleLine = true,
+                placeholder = { Text("Enter Ticket Line 2") },
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedContainerColor = Color.White,
+                    unfocusedContainerColor = Color.White,
+                    focusedBorderColor = Color.Gray,
+                    unfocusedBorderColor = Color.LightGray
+                ),
+                shape = RoundedCornerShape(8.dp)
+            )
+        }
     }
 }
-
 fun handleGetCurrentBookingByParkingArea(
     context: Context,
     parkingAreaId: Int,
@@ -375,8 +422,10 @@ fun handleEditSlotsClick(
 }
 
 
-fun handleChangeNameOfParkingArea(
-    name: String,
+fun handleChangeNameAndTicketDetails(
+    parkingAreaName: String,
+    ticketLine1:String,
+    ticketLine2: String,
     parkingAreaId: String?,
     context: Context,
     repository: ParkingAreaRepository
@@ -387,7 +436,7 @@ fun handleChangeNameOfParkingArea(
         return
     }
 
-    repository.changeNameOfParkingArea(id, name) { result ->
+    repository.updateParkingAreaBasicDetails(id, parkingAreaName,ticketLine1,ticketLine2) { result ->
         result.onSuccess {
             Toast.makeText(context, "Updated", Toast.LENGTH_SHORT).show()
         }
@@ -411,6 +460,8 @@ fun EditParkingAreaPreview() {
         navController = dummyNavController,
         modifier = Modifier.fillMaxSize(),
         parkingAreaId = "2",
-        parkingAreaName = "abcde"
+        parkingAreaName = "abcde",
+        ticketLine1 = "line1",
+        ticketLine2 = "line2"
     )
 }

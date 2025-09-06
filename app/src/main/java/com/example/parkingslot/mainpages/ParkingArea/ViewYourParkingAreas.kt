@@ -175,7 +175,11 @@ fun ViewYourParkingAreas(
                             shape = RoundedCornerShape(16.dp)
                         )
                         .background(Color.White, shape = RoundedCornerShape(16.dp))
-                        .fillMaxWidth().padding(horizontal = 16.dp, vertical = 24.dp) // The Box should fill the width to contain the buttons
+                        .fillMaxWidth()
+                        .padding(
+                            horizontal = 16.dp,
+                            vertical = 24.dp
+                        ) // The Box should fill the width to contain the buttons
                 ) {
 
                     LazyColumn(
@@ -186,9 +190,11 @@ fun ViewYourParkingAreas(
                         items(parkingAreas) { parkingArea ->
                             ParkingAreas(
                                 pakringAreaName = parkingArea.name ?: "Unnamed Area",
-                                onClick = { navController.navigate(Routes.parkingArea + "/" + parkingArea.parkingAreaId + "/" + parkingArea.name + "/" + parkingArea.adminId) },
+                                onClick = {
+                                    navController.navigate(Routes.parkingArea + "/" + parkingArea.parkingAreaId + "/" + parkingArea.name + "/" + parkingArea.adminId + "/" + parkingArea.ticketLine1 + "/" + parkingArea.ticketLine2)
+                                },
                                 onEditClick = {
-                                    navController.navigate(Routes.editParkingArea + "/" + parkingArea.parkingAreaId + "/" + parkingArea.name + "/" + parkingArea.adminId)
+                                    navController.navigate(Routes.editParkingArea + "/" + parkingArea.parkingAreaId + "/" + parkingArea.name + "/" + parkingArea.adminId + "/" + parkingArea.ticketLine1 + "/" + parkingArea.ticketLine2)
                                 }
                             )
                         }

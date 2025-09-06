@@ -25,7 +25,7 @@ import android.graphics.Paint
 import android.graphics.Typeface
 
 @Composable
-fun ParkingTicket(parkingTicketNumber: String? = "0000", modifier: Modifier = Modifier) {
+fun ParkingTicket(parkingTicketNumber: String? = "0000", ticketLine1:String?="LuLu",ticketLine2: String?="Tech park",modifier: Modifier = Modifier) {
     val configuration = LocalConfiguration.current
     val screenWidth = configuration.screenWidthDp.dp * .80f
     val screenHeight = configuration.screenHeightDp.dp * .80f
@@ -87,14 +87,14 @@ fun ParkingTicket(parkingTicketNumber: String? = "0000", modifier: Modifier = Mo
 
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
                         Text(
-                            text = "LuLu",
+                            text = ticketLine1.toString(),
                             color = Color.Blue,
                             fontFamily = FontFamily.Cursive,
                             fontWeight = FontWeight.Bold,
                             fontSize = 50.sp
                         )
                         Text(
-                            text = "Tech park",
+                            text = ticketLine2.toString(),
                             color = Color.Black,
                             fontWeight = FontWeight.Bold,
                             fontSize = 15.sp

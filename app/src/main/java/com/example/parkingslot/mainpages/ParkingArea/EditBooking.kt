@@ -159,7 +159,7 @@ fun EditBooking(
                                 parkingAreaRepository.findParkingAreaById(parkingAreaId.toString()) { result ->
                                     result.onSuccess { response ->
                                         val data = response.data
-                                        navController.navigate("${Routes.editParkingArea}/${data.parkingAreaId}/${data.name}")
+                                        navController.navigate("${Routes.editParkingArea}/${data.parkingAreaId}/${data.name}/${data.ticketLine1}/${data.ticketLine2}")
                                     }
                                     result.onFailure { error ->
                                         Toast.makeText(

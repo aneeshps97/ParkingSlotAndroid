@@ -114,10 +114,12 @@ interface ParkingSlotApi {
     ): Call<ParkingAreaResponse>
 
 
-    @PUT("parkingslot/parkingArea/updateName/{id}")
-    fun updateParkingAreaName(
+    @PUT("parkingslot/parkingArea/updateBasicDetails/{id}")
+    fun updateParkingAreaBasicDetails(
         @Path("id") id: Int,
-        @Query("newName") newName: String
+        @Query("newName") newName: String,
+        @Query("newTicketLine1")newTicketLine1:String,
+        @Query("newTicketLine2")newTicketLine2:String
     ): Call<ParkingAreaResponse>
 
 

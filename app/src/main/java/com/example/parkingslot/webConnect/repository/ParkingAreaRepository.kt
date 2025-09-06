@@ -83,14 +83,16 @@ class ParkingAreaRepository {
     }
 
 
-    fun changeNameOfParkingArea(
+    fun updateParkingAreaBasicDetails(
         parkingAreaId: Int,
-        name: String,
+        parkingAreaName: String,
+        ticketLine1:String,
+        ticketLine2:String,
         callback: (Result<ParkingAreaResponse>) -> Unit
     ) {
         val api = RetrofitService.getRetrofit().create(ParkingSlotApi::class.java)
 
-        api.updateParkingAreaName(id = parkingAreaId, newName = name)
+        api.updateParkingAreaBasicDetails(id = parkingAreaId, newName = parkingAreaName,newTicketLine1=ticketLine1,newTicketLine2=ticketLine2)
             .enqueue(object : Callback<ParkingAreaResponse> {
                 override fun onResponse(
                     call: Call<ParkingAreaResponse>,

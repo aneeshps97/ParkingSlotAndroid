@@ -159,7 +159,7 @@ fun EditUsers(
                         Spacer(modifier.height(20.dp))
 
                         Button(
-                            onClick = {navController.navigate(Routes.editParkingArea+"/"+parkingAreaData.parkingAreaId+"/"+parkingAreaData.name)},
+                            onClick = {navController.navigate(Routes.editParkingArea+"/"+parkingAreaData.parkingAreaId+"/"+parkingAreaData.name+"/"+parkingAreaData.ticketLine1+"/"+parkingAreaData.ticketLine2)},
                             modifier = Modifier
                                 .height(60.dp)
                                 .fillMaxWidth(0.9f),

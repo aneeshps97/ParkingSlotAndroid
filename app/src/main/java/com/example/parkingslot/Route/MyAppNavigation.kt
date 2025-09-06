@@ -80,15 +80,19 @@ fun MyAppNavigation() {
                 )
             }
             //parking area page
-            composable(Routes.parkingArea + "/{parkingAreaId}/{parkingAreaName}/{adminId}") {
+            composable(Routes.parkingArea + "/{parkingAreaId}/{parkingAreaName}/{adminId}/{ticketLine1}/{ticketLine2}") {
                 val parkingAreaId = it.arguments?.getString("parkingAreaId")
                 val parkingAreaName = it.arguments?.getString("parkingAreaName")
+                val ticketLine1 = it.arguments?.getString("ticketLine1")
+                val ticketLine2 = it.arguments?.getString("ticketLine2")
                 val adminId = it.arguments?.getString("adminId")
                 parkingArea(
                     navController,
                     parkingAreaId = parkingAreaId ?: "0",
                     parkingAreaName = parkingAreaName?:"",
-                    adminId = adminId?:"-1"
+                    adminId = adminId?:"-1",
+                    ticketLine2 = ticketLine2?:"",
+                    ticketLine1 = ticketLine1?:""
                 )
             }
 
@@ -149,9 +153,11 @@ fun MyAppNavigation() {
 
             //showing the current ticket
 
-            composable(Routes.parkingTicket + "/{parkingTicketNumber}") {
+            composable(Routes.parkingTicket + "/{parkingTicketNumber}/{ticketLine1}/{ticketLine2}") {
                 val parkingTicketNumber = it.arguments?.getString("parkingTicketNumber")
-                ParkingTicket(parkingTicketNumber = parkingTicketNumber ?: "00000")
+                val ticketLine1 = it.arguments?.getString("ticketLine1")
+                val ticketLine2 = it.arguments?.getString("ticketLine2")
+                ParkingTicket(parkingTicketNumber = parkingTicketNumber ?: "00000",ticketLine1=ticketLine1,ticketLine2=ticketLine2)
             }
 
             //showing available slots
@@ -244,13 +250,17 @@ fun MyAppNavigation() {
 
             }
 
-            composable(Routes.editParkingArea + "/{parkingAreaId}/{parkingAreaName}") {
+            composable(Routes.editParkingArea + "/{parkingAreaId}/{parkingAreaName}/{ticketLine1}/{ticketLine2}") {
                 val parkingAreaId = it.arguments?.getString("parkingAreaId")
                 val parkingAreaName = it.arguments?.getString("parkingAreaName")
+                val ticketLine1 = it.arguments?.getString("ticketLine1")
+                val ticketLine2 = it.arguments?.getString("ticketLine2")
                 EditParkingArea(
                     parkingAreaId = parkingAreaId,
                     parkingAreaName = parkingAreaName,
-                    navController = navController
+                    navController = navController,
+                    ticketLine1 = ticketLine1,
+                    ticketLine2 = ticketLine2
 
                 )
             }

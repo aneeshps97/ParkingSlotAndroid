@@ -2,6 +2,7 @@ package com.example.parkingslot.mainpages.ParkingArea
 
 import android.content.Context
 import android.net.Uri
+import android.util.Log
 import android.widget.Toast
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
@@ -45,6 +46,8 @@ fun parkingArea(
     navController: NavController, modifier: Modifier = Modifier,
     parkingAreaId: String,
     parkingAreaName: String,
+    ticketLine1:String,
+    ticketLine2: String,
     adminId: String,
 ) {
     val context = LocalContext.current
@@ -170,7 +173,7 @@ fun parkingArea(
                                     "Update",
                                     icon = Icons.Default.Edit,
                                     onClick = {
-                                        navController.navigate(Routes.editParkingArea + "/" + parkingAreaId + "/" + parkingAreaName)
+                                        navController.navigate(Routes.editParkingArea + "/" + parkingAreaId + "/" + parkingAreaName+"/"+ticketLine1+"/"+ticketLine2)
                                     })
                                 Spacer(modifier = Modifier.height(16.dp))
                             }
@@ -195,7 +198,7 @@ fun handleDeleteParkingArea(parkingAreaId: Int, context: Context, navController:
                 ) {
                     if (response.body()?.status == 0) {
                         Toast.makeText(context, "parking area deleted", Toast.LENGTH_SHORT).show()
-                        navController.navigate(Routes.homePage)
+                        navController.navigate(Routes.viewYourParkingAreas)
                     } else {
                         Toast.makeText(context, "failed", Toast.LENGTH_SHORT).show()
                     }
@@ -281,9 +284,11 @@ fun handleBookingCheckForToday(
 
     repository.getBookingByUserParkingAndDate(userId, parkingAreaId, today) { result ->
         result.onSuccess { response ->
-            val slotName = response.data?.firstOrNull()?.slot?.name
+              val slotName = response.data?.firstOrNull()?.slot?.name
+            val ticketLine1 = response.data?.firstOrNull()?.parkingArea?.ticketLine1
+            val ticketLine2 = response.data?.firstOrNull()?.parkingArea?.ticketLine2
             if (slotName != null) {
-                navController.navigate("${Routes.parkingTicket}/$slotName")
+                navController.navigate("${Routes.parkingTicket}/$slotName/$ticketLine1/$ticketLine2")
             } else {
                 Toast.makeText(context, "No Booking for today", Toast.LENGTH_SHORT).show()
             }

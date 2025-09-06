@@ -44,6 +44,8 @@ fun CreateParkingArea(navController: NavController, modifier: Modifier = Modifie
     val sharedPref = remember { context.getSharedPreferences("loginPref", Context.MODE_PRIVATE) }
     val userId = sharedPref.getInt("user_id", 0)
     var name by remember { mutableStateOf("") }
+    var ticketLine1 by remember { mutableStateOf("") }
+    var ticketLine2 by remember { mutableStateOf("") }
     val isValidationSuccess by remember {
         derivedStateOf {
             name.isNotEmpty()
@@ -73,9 +75,13 @@ fun CreateParkingArea(navController: NavController, modifier: Modifier = Modifie
             Spacer(modifier = Modifier.height(50.dp))
             LabeledTextField(value = name, onValueChange = { name = it }, label = "Name")
             Spacer(modifier = Modifier.height(12.dp))
+            LabeledTextField(value = ticketLine1, onValueChange = { ticketLine1 = it }, label = "TicketLine1")
+            LabeledTextField(value = ticketLine2, onValueChange = { ticketLine2 = it }, label = "TicketLine2")
             ForwardButton(isEnabled = isValidationSuccess, onClick = {createNewParking(
                 context = context,
                 name = name,
+                ticketLine1=ticketLine1,
+                ticketLine2=ticketLine2,
                 userId = userId,
                 navController = navController
             )})
@@ -87,9 +93,9 @@ fun CreateParkingArea(navController: NavController, modifier: Modifier = Modifie
 
 }
 
-fun createNewParking(context: Context, name: String, userId: Int, navController: NavController) {
+fun createNewParking(context: Context, name: String,ticketLine1:String,ticketLine2: String, userId: Int, navController: NavController) {
     val api = RetrofitService.getRetrofit().create(ParkingSlotApi::class.java)
-    val parkingAreaRequest = ParkingAreaRequest(name = name, adminId = userId)
+    val parkingAreaRequest = ParkingAreaRequest(name = name, ticketLine1 = ticketLine1, ticketLine2=ticketLine2, adminId = userId)
     api.createParkingArea(parkingAreaRequest).enqueue(object : Callback<ParkingAreaResponse> {
         override fun onResponse(
             call: Call<ParkingAreaResponse>,
