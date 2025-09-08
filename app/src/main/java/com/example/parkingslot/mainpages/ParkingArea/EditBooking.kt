@@ -93,109 +93,105 @@ fun EditBooking(
 
     PageBackground {
 
-        Column(modifier = modifier.fillMaxSize()) {
-            Box(Modifier.fillMaxSize()) {
-                Text(
-                    "EDIT",
-
-                    modifier = Modifier
-                        .align(Alignment.TopCenter)
-                        .padding(top = 16.dp),
-                    style = MaterialTheme.typography.headlineSmall.copy(
-                        fontWeight = FontWeight.SemiBold
-                    )
+        Column(
+            modifier = Modifier.fillMaxSize()
+        ) {
+            // Top-aligned text
+            Text(
+                "EDIT",
+                modifier = Modifier
+                    .align(Alignment.CenterHorizontally)
+                    .padding(top = 16.dp),
+                style = MaterialTheme.typography.headlineSmall.copy(
+                    fontWeight = FontWeight.SemiBold
                 )
+            )
 
-                Box(
-                    modifier = Modifier
-                        .align(Alignment.Center)
-                        .fillMaxWidth()
-                        .padding(16.dp)
-                ) {
-
-                    ScrollableBoxContentForEditBookings(
-                        listOfBookings, onRemove = { index ->
-                            showRemoveBooking.value = true
-                            bookingToRemove.value = listOfBookings.get(index)
-                            indexToRemove.value = index
-                        },
-                        context = context
-                    )
-                }
-
-                Box(
-                    modifier = Modifier
-                        .align(Alignment.BottomCenter)
-                        .padding(bottom = 32.dp)
-                ) {
-                    Column {
-
-                        Button(
-                            onClick = {
-                                handleAssignSlotForUsers(context, parkingAreaId.toString(), navController,parkingAreaRepository)
-                            },
-                            modifier = Modifier
-                                .height(60.dp)
-                                .fillMaxWidth(0.9f),
-                            shape = RoundedCornerShape(16.dp),
-                            colors = ButtonDefaults.buttonColors(
-                                containerColor = Color.White,
-                                contentColor = Color.Black
-                            ),
-                            border = BorderStroke(2.dp, Color.Black),
-                            elevation = null
-                        ) {
-                            Text(
-                                text = "Create Booking",
-                                fontSize = 18.sp,
-                                fontWeight = FontWeight.SemiBold
-                            )
-                        }
-
-                        Spacer(modifier.height(20.dp))
-
-                        Button(
-                            onClick = {
-                                parkingAreaRepository.findParkingAreaById(parkingAreaId.toString()) { result ->
-                                    result.onSuccess { response ->
-                                        val data = response.data
-                                        navController.navigate("${Routes.editParkingArea}/${data.parkingAreaId}/${data.name}/${data.ticketLine1}/${data.ticketLine2}")
-                                    }
-                                    result.onFailure { error ->
-                                        Toast.makeText(
-                                            context,
-                                            error.message ?: "Users not found",
-                                            Toast.LENGTH_SHORT
-                                        ).show()
-                                    }
-                                }
-
-                            },
-                            modifier = Modifier
-                                .height(60.dp)
-                                .fillMaxWidth(0.9f),
-                            shape = RoundedCornerShape(16.dp),
-                            colors = ButtonDefaults.buttonColors(
-                                containerColor = Color.White,
-                                contentColor = Color.Black
-                            ),
-                            border = BorderStroke(2.dp, Color.Black),
-                            elevation = null
-                        ) {
-                            Text(
-                                text = "Finish",
-                                fontSize = 18.sp,
-                                fontWeight = FontWeight.SemiBold
-                            )
-                        }
-
-                    }
-
-                }
+            // Scrollable content takes up all remaining space
+            Box(
+                modifier = Modifier
+                    .weight(1f) // This is the key. It fills the space between the title and buttons.
+                    .fillMaxWidth()
+                    .padding(16.dp)
+            ) {
+                ScrollableBoxContentForEditBookings(
+                    listOfBookings, onRemove = { index ->
+                        showRemoveBooking.value = true
+                        bookingToRemove.value = listOfBookings.get(index)
+                        indexToRemove.value = index
+                    },
+                    context = context
+                )
             }
 
-        }
+            // Buttons at the bottom, correctly aligned
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .align(Alignment.CenterHorizontally)
+                    .padding(bottom = 32.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Button(
+                    onClick = {
+                        handleAssignSlotForUsers(context, parkingAreaId.toString(), navController, parkingAreaRepository)
+                    },
+                    modifier = Modifier
+                        .height(60.dp)
+                        .fillMaxWidth(0.9f),
+                    shape = RoundedCornerShape(16.dp),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = Color.White,
+                        contentColor = Color.Black
+                    ),
+                    border = BorderStroke(2.dp, Color.Black),
+                    elevation = null
+                ) {
+                    Text(
+                        text = "Create Booking",
+                        fontSize = 18.sp,
+                        fontWeight = FontWeight.SemiBold
+                    )
+                }
 
+                Spacer(modifier.height(20.dp))
+
+                Button(
+                    onClick = {
+                        parkingAreaRepository.findParkingAreaById(parkingAreaId.toString()) { result ->
+                            result.onSuccess { response ->
+                                val data = response.data
+                                navController.navigate("${Routes.editParkingArea}/${data.parkingAreaId}/${data.name}/${data.ticketLine1}/${data.ticketLine2}")
+                            }
+                            result.onFailure { error ->
+                                Toast.makeText(
+                                    context,
+                                    error.message ?: "Users not found",
+                                    Toast.LENGTH_SHORT
+                                ).show()
+                            }
+                        }
+
+                    },
+                    modifier = Modifier
+                        .height(60.dp)
+                        .fillMaxWidth(0.9f),
+                    shape = RoundedCornerShape(16.dp),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = Color.White,
+                        contentColor = Color.Black
+                    ),
+                    border = BorderStroke(2.dp, Color.Black),
+                    elevation = null
+                ) {
+                    Text(
+                        text = "Finish",
+                        fontSize = 18.sp,
+                        fontWeight = FontWeight.SemiBold
+                    )
+                }
+            }
+        }
     }
 
 }
@@ -257,7 +253,7 @@ fun ScrollableBoxContentForEditBookings(
     val scrollState = rememberScrollState()
     Box(
         modifier = Modifier
-            .fillMaxHeight(.8f)
+            .fillMaxHeight()
             .verticalScroll(scrollState)
             .padding(16.dp)
     ) {

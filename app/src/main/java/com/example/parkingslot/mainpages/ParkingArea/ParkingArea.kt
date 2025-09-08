@@ -74,7 +74,8 @@ fun parkingArea(
                 }
             )
             Box(
-                modifier = Modifier.fillMaxSize().padding(20.dp),
+                modifier = Modifier.fillMaxSize()
+                    .padding(20.dp),
                 contentAlignment = Alignment.TopCenter
             ) {
                 Text(

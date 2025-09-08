@@ -76,12 +76,12 @@ fun EditSlots(
         showDialog = showRemoveSlot.value,
         onDismiss = { showRemoveSlot.value = false },
         onConfirm = {
-                    showRemoveSlot.value = false;
+            showRemoveSlot.value = false;
             if (indexToRemove.value in listOfSlots.indices) {
-                removeSlot( context, listOfSlots, indexToRemove.value)
+                removeSlot(context, listOfSlots, indexToRemove.value)
             }
         },
-        "Remove "+slotToRemove.value.name,
+        "Remove " + slotToRemove.value.name,
         "Are you sure?"
     )
 
@@ -89,129 +89,141 @@ fun EditSlots(
 
         UpdateSlotDataPopUp(
             showDialog = showUpdateSlot.value,
-            onDismiss = {showUpdateSlot.value=false},
+            onDismiss = { showUpdateSlot.value = false },
             navController = navController,
             slotData = slotToUpdate.value,
-            onSlotUpdated = {slotData->handleSlotUpdated(slotData,context,showUpdateSlot,listOfSlots)}
+            onSlotUpdated = { slotData ->
+                handleSlotUpdated(
+                    slotData,
+                    context,
+                    showUpdateSlot,
+                    listOfSlots
+                )
+            }
         )
 
         AddParkingSlotPopUp(
             showDialog = showAddSlot.value,
-            onDismiss = {showAddSlot.value=false},
+            onDismiss = { showAddSlot.value = false },
             navController = navController,
-            onSlotAdded = {slot->handleSlotAdded(slot,context,showUpdateSlot,listOfSlots,
-                parkingAreaData.parkingAreaId)}
+            onSlotAdded = { slot ->
+                handleSlotAdded(
+                    slot, context, showUpdateSlot, listOfSlots,
+                    parkingAreaData.parkingAreaId
+                )
+            }
         )
 
-        Column ( modifier= modifier.fillMaxSize()){
-            Box(Modifier.fillMaxSize()){
-                Text(
-                    "EDIT",
-
-                    modifier = Modifier
-                        .align(Alignment.TopCenter)
-                        .padding(top = 16.dp),
-                    style = MaterialTheme.typography.headlineSmall.copy(
-                        fontWeight = FontWeight.SemiBold
-                    )
+        Column(
+            modifier = Modifier.fillMaxSize()
+        ) {
+            // Top-aligned text
+            Text(
+                "EDIT",
+                modifier = Modifier
+                    .align(Alignment.CenterHorizontally)
+                    .padding(top = 16.dp),
+                style = MaterialTheme.typography.headlineSmall.copy(
+                    fontWeight = FontWeight.SemiBold
                 )
+            )
 
-                Box(
-                    modifier = Modifier
-                        .align(Alignment.Center)
-                        .fillMaxWidth()
-                        .padding(16.dp)
-                ){
-                    //populate the slots in a list of text fileds and with an edit and x button
-                    //when edit is clicked it should display on a popup where we can edit the details of it
-                    //also add a button to add slots
-                    //just copy and paste the code for add slots
-
-                    ScrollableBoxContentForEditSlots(listOfSlots,onRemove = { index ->
-                            showRemoveSlot.value = true
-                            slotToRemove.value=listOfSlots.get(index)
-                            indexToRemove.value = index
-                    },onUpdate = {index ->
+            // Scrollable content takes up all remaining space
+            Box(
+                modifier = Modifier
+                    .weight(1f) // This is the key. It fills the space between the title and buttons.
+                    .fillMaxWidth()
+                    .padding(16.dp)
+            ) {
+                ScrollableBoxContentForEditSlots(
+                    listOfSlots,
+                    onRemove = { index ->
+                        showRemoveSlot.value = true
+                        slotToRemove.value = listOfSlots.get(index)
+                        indexToRemove.value = index
+                    },
+                    onUpdate = { index ->
                         showUpdateSlot.value = true
                         slotToUpdate.value = listOfSlots.get(index)
                         indexToUpdate.value = index
-                    })
-
-                    
-                }
-
-                Box(
-                    modifier = Modifier
-                        .align(Alignment.BottomCenter)
-                        .padding(bottom = 32.dp)
-                ) {
-                    Column {
-
-                        Button(
-                            onClick = {showAddSlot.value=true},
-                            modifier = Modifier
-                                .height(60.dp)
-                                .fillMaxWidth(0.9f),
-                            shape = RoundedCornerShape(16.dp),
-                            colors = ButtonDefaults.buttonColors(
-                                containerColor = Color.White,
-                                contentColor = Color.Black
-                            ),
-                            border = BorderStroke(2.dp, Color.Black),
-                            elevation = null
-                        ) {
-                            Text(
-                                text = "Create slot",
-                                fontSize = 18.sp,
-                                fontWeight = FontWeight.SemiBold
-                            )
-                        }
-
-                        Spacer(modifier.height(20.dp))
-
-                        Button(
-                            onClick = {navController.navigate(Routes.editParkingArea+"/"+parkingAreaData.parkingAreaId+"/"+parkingAreaData.name+"/"+parkingAreaData.ticketLine1+"/"+parkingAreaData.ticketLine2)},
-                            modifier = Modifier
-                                .height(60.dp)
-                                .fillMaxWidth(0.9f),
-                            shape = RoundedCornerShape(16.dp),
-                            colors = ButtonDefaults.buttonColors(
-                                containerColor = Color.White,
-                                contentColor = Color.Black
-                            ),
-                            border = BorderStroke(2.dp, Color.Black),
-                            elevation = null
-                        ) {
-                            Text(
-                                text = "Finish",
-                                fontSize = 18.sp,
-                                fontWeight = FontWeight.SemiBold
-                            )
-                        }
-
                     }
-
-                }
+                )
             }
 
+            // Buttons at the bottom, correctly aligned
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .align(Alignment.CenterHorizontally)
+                    .padding(bottom = 32.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Button(
+                    onClick = { showAddSlot.value = true },
+                    modifier = Modifier
+                        .height(60.dp)
+                        .fillMaxWidth(0.9f),
+                    shape = RoundedCornerShape(16.dp),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = Color.White,
+                        contentColor = Color.Black
+                    ),
+                    border = BorderStroke(2.dp, Color.Black),
+                    elevation = null
+                ) {
+                    Text(
+                        text = "Create slot",
+                        fontSize = 18.sp,
+                        fontWeight = FontWeight.SemiBold
+                    )
+                }
+
+                Spacer(modifier.height(20.dp))
+
+                Button(
+                    onClick = { navController.navigate(Routes.editParkingArea + "/" + parkingAreaData.parkingAreaId + "/" + parkingAreaData.name + "/" + parkingAreaData.ticketLine1 + "/" + parkingAreaData.ticketLine2) },
+                    modifier = Modifier
+                        .height(60.dp)
+                        .fillMaxWidth(0.9f),
+                    shape = RoundedCornerShape(16.dp),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = Color.White,
+                        contentColor = Color.Black
+                    ),
+                    border = BorderStroke(2.dp, Color.Black),
+                    elevation = null
+                ) {
+                    Text(
+                        text = "Finish",
+                        fontSize = 18.sp,
+                        fontWeight = FontWeight.SemiBold
+                    )
+                }
+            }
         }
 
     }
 
 }
 
-fun handleSlotAdded(slot: Slot, context: Context, showUpdateSlot: MutableState<Boolean>, listOfSlots: MutableList<SlotData>,parkingAreaId:Int){
+fun handleSlotAdded(
+    slot: Slot,
+    context: Context,
+    showUpdateSlot: MutableState<Boolean>,
+    listOfSlots: MutableList<SlotData>,
+    parkingAreaId: Int
+) {
     val api = RetrofitService.getRetrofit().create(ParkingSlotApi::class.java)
-    api.addSlots(slot,parkingAreaId).enqueue(object :Callback<SlotDataResponse>{
+    api.addSlots(slot, parkingAreaId).enqueue(object : Callback<SlotDataResponse> {
         override fun onResponse(
             call: Call<SlotDataResponse?>,
             response: Response<SlotDataResponse?>
         ) {
-            if(response.body()?.status==0){
+            if (response.body()?.status == 0) {
                 Toast.makeText(context, "Slot added", Toast.LENGTH_SHORT).show()
                 response.body()?.data?.let { listOfSlots.add(it) }
                 showUpdateSlot.value = false
-            }else{
+            } else {
                 Toast.makeText(context, "failed", Toast.LENGTH_SHORT).show()
             }
         }
@@ -226,19 +238,24 @@ fun handleSlotAdded(slot: Slot, context: Context, showUpdateSlot: MutableState<B
     })
 }
 
-fun handleSlotUpdated(slotData: SlotData,context: Context,showUpdateSlot: MutableState<Boolean>,listOfSlots: MutableList<SlotData>){
+fun handleSlotUpdated(
+    slotData: SlotData,
+    context: Context,
+    showUpdateSlot: MutableState<Boolean>,
+    listOfSlots: MutableList<SlotData>
+) {
     val api = RetrofitService.getRetrofit().create(ParkingSlotApi::class.java)
-    api.updateSlot(slotData,slotData.slotId).enqueue(object :Callback<SlotDataResponse>{
+    api.updateSlot(slotData, slotData.slotId).enqueue(object : Callback<SlotDataResponse> {
         override fun onResponse(
             call: Call<SlotDataResponse?>,
             response: Response<SlotDataResponse?>
         ) {
-            if(response.body()?.status==0){
+            if (response.body()?.status == 0) {
                 Toast.makeText(context, "Slot upated", Toast.LENGTH_SHORT).show()
-                listOfSlots.removeIf { slot->slot.slotId==slotData.slotId }
+                listOfSlots.removeIf { slot -> slot.slotId == slotData.slotId }
                 listOfSlots.add(slotData)
                 showUpdateSlot.value = false
-            }else{
+            } else {
                 Toast.makeText(context, "failed", Toast.LENGTH_SHORT).show()
             }
         }
@@ -253,51 +270,53 @@ fun handleSlotUpdated(slotData: SlotData,context: Context,showUpdateSlot: Mutabl
     })
 }
 
-fun removeSlot(context: Context, listOfSlots: SnapshotStateList<SlotData>,index: Int){
+fun removeSlot(context: Context, listOfSlots: SnapshotStateList<SlotData>, index: Int) {
     val api = RetrofitService.getRetrofit().create(ParkingSlotApi::class.java)
-  api.deleteSlot(listOfSlots.get(index).slotId).enqueue(object :Callback<SlotDataResponse>{
-      override fun onResponse(
-          call: Call<SlotDataResponse?>,
-          response: Response<SlotDataResponse?>
-      ) {
-          if(response.body()?.status==0){
-              Toast.makeText(context, "Slot removed", Toast.LENGTH_SHORT).show()
-              listOfSlots.removeAt(index)
-          }
-      }
+    api.deleteSlot(listOfSlots.get(index).slotId).enqueue(object : Callback<SlotDataResponse> {
+        override fun onResponse(
+            call: Call<SlotDataResponse?>,
+            response: Response<SlotDataResponse?>
+        ) {
+            if (response.body()?.status == 0) {
+                Toast.makeText(context, "Slot removed", Toast.LENGTH_SHORT).show()
+                listOfSlots.removeAt(index)
+            }
+        }
 
-      override fun onFailure(
-          call: Call<SlotDataResponse?>,
-          t: Throwable
-      ) {
-          TODO("Not yet implemented")
-      }
+        override fun onFailure(
+            call: Call<SlotDataResponse?>,
+            t: Throwable
+        ) {
+            TODO("Not yet implemented")
+        }
 
-  })
+    })
 
 }
 
 
 @Composable
-fun ScrollableBoxContentForEditSlots(listofData: List<SlotData>,
-                                     onRemove: (Int) -> Unit,onUpdate:(Int) -> Unit
+fun ScrollableBoxContentForEditSlots(
+    listofData: List<SlotData>,
+    onRemove: (Int) -> Unit, onUpdate: (Int) -> Unit
 ) {
     val scrollState = rememberScrollState()
     Box(
         modifier = Modifier
-            .fillMaxHeight(.8f)
+            .fillMaxHeight()
             .verticalScroll(scrollState)
             .padding(16.dp)
     ) {
-        Column {listofData.forEachIndexed { index, data ->
-            LabelWithTrailingIcon(
-                data.name,
-                { onRemove(index) } ,
-                true,
-                {onUpdate(index)}
-            )
-            Spacer(modifier = Modifier.height(8.dp))
-        }
+        Column {
+            listofData.forEachIndexed { index, data ->
+                LabelWithTrailingIcon(
+                    data.name,
+                    { onRemove(index) },
+                    true,
+                    { onUpdate(index) }
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+            }
         }
     }
 }
@@ -314,7 +333,7 @@ fun EditSlotsPreview() {
         SlotData(slotId = 3, name = "Slot C")
     )
 
-    val dummyUsers =emptyList<UserData>()
+    val dummyUsers = emptyList<UserData>()
 
     val dummyParkingArea = ParkingAreaData(
         parkingAreaId = 2,

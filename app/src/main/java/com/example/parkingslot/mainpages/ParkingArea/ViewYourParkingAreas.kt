@@ -166,6 +166,7 @@ fun ViewYourParkingAreas(
                 modifier = Modifier
                     .align(Alignment.Center)
                     .fillMaxWidth()
+                    .fillMaxHeight(0.8f)
                     .padding(16.dp)
             ) {
                 Box(

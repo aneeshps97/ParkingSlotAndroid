@@ -96,118 +96,113 @@ fun EditUsers(
             onUserAdded = {user->handleUserAdded(user,context,parkingAreaData.parkingAreaId,listOfUsers)}
         )
 
-        Column ( modifier= modifier.fillMaxSize()){
-            Box(Modifier.fillMaxSize()){
-                Text(
-                    "EDIT",
-
-                    modifier = Modifier
-                        .align(Alignment.TopCenter)
-                        .padding(top = 16.dp),
-                    style = MaterialTheme.typography.headlineSmall.copy(
-                        fontWeight = FontWeight.SemiBold
-                    )
+        Column(
+            modifier = Modifier.fillMaxSize()
+        ) {
+            // Top-aligned text
+            Text(
+                "EDIT",
+                modifier = Modifier
+                    .align(Alignment.CenterHorizontally)
+                    .padding(top = 16.dp),
+                style = MaterialTheme.typography.headlineSmall.copy(
+                    fontWeight = FontWeight.SemiBold
                 )
+            )
 
-                Box(
-                    modifier = Modifier
-                        .align(Alignment.Center)
-                        .fillMaxWidth()
-                        .padding(16.dp)
-                ){
-                    //populate the slots in a list of text fileds and with an edit and x button
-                    //when edit is clicked it should display on a popup where we can edit the details of it
-                    //also add a button to add slots
-                    //just copy and paste the code for add slots
-
-                    ScrollableBoxContentForEditUsers(listOfUsers,onRemove = { index ->
-                        showRemoveUser.value = true
-                        userToRemove.value=listOfUsers.get(index)
-                        indexToRemove.value = index
-                    })
-
-
-                }
-
-                Box(
-                    modifier = Modifier
-                        .align(Alignment.BottomCenter)
-                        .padding(bottom = 32.dp)
-                ) {
-                    Column {
-
-                        Button(
-                            onClick = {showAddUser.value=true},
-                            modifier = Modifier
-                                .height(60.dp)
-                                .fillMaxWidth(0.9f),
-                            shape = RoundedCornerShape(16.dp),
-                            colors = ButtonDefaults.buttonColors(
-                                containerColor = Color.White,
-                                contentColor = Color.Black
-                            ),
-                            border = BorderStroke(2.dp, Color.Black),
-                            elevation = null
-                        ) {
-                            Text(
-                                text = "Add user",
-                                fontSize = 18.sp,
-                                fontWeight = FontWeight.SemiBold
-                            )
-                        }
-
-                        Spacer(modifier.height(20.dp))
-
-                        Button(
-                            onClick = {navController.navigate(Routes.editParkingArea+"/"+parkingAreaData.parkingAreaId+"/"+parkingAreaData.name+"/"+parkingAreaData.ticketLine1+"/"+parkingAreaData.ticketLine2)},
-                            modifier = Modifier
-                                .height(60.dp)
-                                .fillMaxWidth(0.9f),
-                            shape = RoundedCornerShape(16.dp),
-                            colors = ButtonDefaults.buttonColors(
-                                containerColor = Color.White,
-                                contentColor = Color.Black
-                            ),
-                            border = BorderStroke(2.dp, Color.Black),
-                            elevation = null
-                        ) {
-                            Text(
-                                text = "Finish",
-                                fontSize = 18.sp,
-                                fontWeight = FontWeight.SemiBold
-                            )
-                        }
-
-                    }
-
-                }
+            // Scrollable content takes up all remaining space
+            Box(
+                modifier = Modifier
+                    .weight(1f) // This is the key. It fills the space between the title and buttons.
+                    .fillMaxWidth()
+                    .padding(horizontal = 10.dp, vertical = 25.dp), // Use padding to create consistent margins
+                   contentAlignment = Alignment.Center
+            ) {
+                ScrollableBoxContentForEditUsers(listOfUsers, onRemove = { index ->
+                    showRemoveUser.value = true
+                    userToRemove.value = listOfUsers.get(index)
+                    indexToRemove.value = index
+                })
             }
 
+            // Buttons at the bottom, correctly aligned
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .align(Alignment.CenterHorizontally)
+                    .padding(bottom = 32.dp, top = 20.dp), // Added top padding for spacing
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Button(
+                    onClick = { showAddUser.value = true },
+                    modifier = Modifier
+                        .height(60.dp)
+                        .fillMaxWidth(0.9f),
+                    shape = RoundedCornerShape(16.dp),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = Color.White,
+                        contentColor = Color.Black
+                    ),
+                    border = BorderStroke(2.dp, Color.Black),
+                    elevation = null
+                ) {
+                    Text(
+                        text = "Add user",
+                        fontSize = 18.sp,
+                        fontWeight = FontWeight.SemiBold
+                    )
+                }
+
+                Spacer(modifier.height(20.dp))
+
+                Button(
+                    onClick = { navController.navigate(Routes.editParkingArea + "/" + parkingAreaData.parkingAreaId + "/" + parkingAreaData.name + "/" + parkingAreaData.ticketLine1 + "/" + parkingAreaData.ticketLine2) },
+                    modifier = Modifier
+                        .height(60.dp)
+                        .fillMaxWidth(0.9f),
+                    shape = RoundedCornerShape(16.dp),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = Color.White,
+                        contentColor = Color.Black
+                    ),
+                    border = BorderStroke(2.dp, Color.Black),
+                    elevation = null
+                ) {
+                    Text(
+                        text = "Finish",
+                        fontSize = 18.sp,
+                        fontWeight = FontWeight.SemiBold
+                    )
+                }
+            }
         }
 
     }
 }
 
 @Composable
-fun ScrollableBoxContentForEditUsers(listofData: List<UserData>,
-                                     onRemove: (Int) -> Unit
+fun ScrollableBoxContentForEditUsers(
+    listofData: List<UserData>,
+    onRemove: (Int) -> Unit
 ) {
     val scrollState = rememberScrollState()
     Box(
         modifier = Modifier
-            .fillMaxHeight(.8f)
+            .fillMaxWidth()
             .verticalScroll(scrollState)
-            .padding(16.dp)
     ) {
-        Column {listofData.forEachIndexed { index, data ->
-            LabelWithTrailingIcon(
-                data.name,
-                { onRemove(index) } ,
-                false,
-                {}
-            )
-            Spacer(modifier = Modifier.height(8.dp))
-        }
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally // This centers the column content
+        ) {
+            listofData.forEachIndexed { index, data ->
+                LabelWithTrailingIcon(
+                    data.name,
+                    { onRemove(index) },
+                    false,
+                    {}
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+            }
         }
     }
 }

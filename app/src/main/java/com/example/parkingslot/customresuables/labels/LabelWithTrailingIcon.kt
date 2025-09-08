@@ -27,11 +27,11 @@ fun LabelWithTrailingIcon(
     value: String,
     onRemoveClick: () -> Unit,
     showEdit: Boolean = false,            // 👈 new parameter with default false
-    onEditClick: (() -> Unit)? = null     // 👈 optional callback for edit
+    onEditClick: (() -> Unit)? = null     // 👈 optional callback for edit'
 ) {
     Row(
         modifier = Modifier
-            .fillMaxWidth()
+            // Removed .fillMaxWidth() to allow the Row to be centered by its parent
             .padding(end = 8.dp)
             .background(Color(0xFFF0F0F0), shape = RoundedCornerShape(8.dp))
             .padding(horizontal = 12.dp, vertical = 8.dp),
