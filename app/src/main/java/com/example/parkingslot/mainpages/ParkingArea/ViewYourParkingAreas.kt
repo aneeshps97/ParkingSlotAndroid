@@ -180,7 +180,7 @@ fun ViewYourParkingAreas(
                         .padding(
                             horizontal = 16.dp,
                             vertical = 24.dp
-                        ) // The Box should fill the width to contain the buttons
+                        ).align(Alignment.Center)
                 ) {
 
                     LazyColumn(

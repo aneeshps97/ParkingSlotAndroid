@@ -85,8 +85,6 @@ fun EditUsers(
     )
 
     PageBackground {
-
-
         AddUserPopUp(
             showDialog = showAddUser.value,
             onDismiss = { showAddUser.value = false },
@@ -116,29 +114,25 @@ fun EditUsers(
             )
 
             // Scrollable content takes up all remaining space
-            Box(
-                modifier = Modifier
-                    .weight(1f) // This is the key. It fills the space between the title and buttons.
-                    .fillMaxWidth()
-                    .padding(
-                        horizontal = 10.dp,
-                        vertical = 25.dp
-                    ), // Use padding to create consistent margins
-                contentAlignment = Alignment.Center
-            ) {
-                ScrollableBoxContentForEditUsers(listOfUsers, onRemove = { index ->
+            ScrollableBoxContentForEditUsers(
+                listOfUsers,
+                onRemove = { index ->
                     showRemoveUser.value = true
                     userToRemove.value = listOfUsers.get(index)
                     indexToRemove.value = index
-                })
-            }
+                },
+                modifier = Modifier
+                    .weight(1f)
+                    .fillMaxWidth()
+                    .padding(horizontal = 10.dp, vertical = 25.dp)
+            )
 
             // Buttons at the bottom, correctly aligned
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
                     .align(Alignment.CenterHorizontally)
-                    .padding(bottom = 32.dp, top = 20.dp), // Added top padding for spacing
+                    .padding(bottom = 32.dp, top = 20.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Button(
@@ -161,7 +155,7 @@ fun EditUsers(
                     )
                 }
 
-                Spacer(modifier.height(20.dp))
+                Spacer(modifier = Modifier.height(20.dp))
 
                 Button(
                     onClick = { navController.navigate(Routes.editParkingArea + "/" + parkingAreaData.parkingAreaId + "/" + parkingAreaData.name + "/" + parkingAreaData.ticketLine1 + "/" + parkingAreaData.ticketLine2) },
@@ -184,23 +178,23 @@ fun EditUsers(
                 }
             }
         }
-
     }
 }
 
 @Composable
 fun ScrollableBoxContentForEditUsers(
     listofData: List<UserData>,
-    onRemove: (Int) -> Unit
+    onRemove: (Int) -> Unit,
+    modifier: Modifier = Modifier // Add this modifier parameter
 ) {
     val scrollState = rememberScrollState()
     Box(
-        modifier = Modifier
-            .fillMaxWidth()
+        modifier = modifier // Apply the modifier here
             .verticalScroll(scrollState)
     ) {
         Column(
-            horizontalAlignment = Alignment.CenterHorizontally // This centers the column content
+            modifier = Modifier.fillMaxWidth(),
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
             listofData.forEachIndexed { index, data ->
                 LabelWithTrailingIcon(
