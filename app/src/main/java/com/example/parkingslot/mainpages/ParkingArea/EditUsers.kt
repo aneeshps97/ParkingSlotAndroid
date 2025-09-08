@@ -62,7 +62,7 @@ fun EditUsers(
     val showRemoveUser = remember { mutableStateOf(false) }
     val showAddUser = remember { mutableStateOf(false) }
 
-    val userToRemove = remember { mutableStateOf(UserData.EMPTY)}
+    val userToRemove = remember { mutableStateOf(UserData.EMPTY) }
     val context: Context = LocalContext.current
     val indexToRemove = remember { mutableStateOf(-1) }
 
@@ -72,10 +72,15 @@ fun EditUsers(
         onConfirm = {
             showRemoveUser.value = false;
             if (indexToRemove.value in listOfUsers.indices) {
-                removeUserFromParkingArea( context, listOfUsers, indexToRemove.value,parkingAreaData.parkingAreaId)
+                removeUserFromParkingArea(
+                    context,
+                    listOfUsers,
+                    indexToRemove.value,
+                    parkingAreaData.parkingAreaId
+                )
             }
         },
-        "Remove "+userToRemove.value.name,
+        "Remove " + userToRemove.value.name,
         "Are you sure?"
     )
 
@@ -84,9 +89,16 @@ fun EditUsers(
 
         AddUserPopUp(
             showDialog = showAddUser.value,
-            onDismiss = {showAddUser.value=false},
+            onDismiss = { showAddUser.value = false },
             navController = navController,
-            onUserAdded = {user->handleUserAdded(user,context,parkingAreaData.parkingAreaId,listOfUsers)}
+            onUserAdded = { user ->
+                handleUserAdded(
+                    user,
+                    context,
+                    parkingAreaData.parkingAreaId,
+                    listOfUsers
+                )
+            }
         )
 
         Column(
@@ -108,8 +120,11 @@ fun EditUsers(
                 modifier = Modifier
                     .weight(1f) // This is the key. It fills the space between the title and buttons.
                     .fillMaxWidth()
-                    .padding(horizontal = 10.dp, vertical = 25.dp), // Use padding to create consistent margins
-                   contentAlignment = Alignment.Center
+                    .padding(
+                        horizontal = 10.dp,
+                        vertical = 25.dp
+                    ), // Use padding to create consistent margins
+                contentAlignment = Alignment.Center
             ) {
                 ScrollableBoxContentForEditUsers(listOfUsers, onRemove = { index ->
                     showRemoveUser.value = true
@@ -201,62 +216,79 @@ fun ScrollableBoxContentForEditUsers(
 }
 
 
-fun handleUserAdded(user: User, context: Context, parkingAreaId:Int,listOfUsers: SnapshotStateList<UserData>){
-    val listOfUserIds = mutableListOf<Int>()
-    listOfUserIds.add(user.id!!)
-    val api = RetrofitService.getRetrofit().create(ParkingSlotApi::class.java)
-    api.addUsersToParkingArea(parkingAreaId,listOfUserIds).enqueue(object : Callback<ParkingAreaResponse> {
-        override fun onResponse(
-            call: Call<ParkingAreaResponse>,
-            response: Response<ParkingAreaResponse>
-        ) {
-            if (response.body() != null && response.body()?.status == 0) {
-                val user = response.body()?.data?.users?.get(0)
-                if(listOfUsers.contains(user)){
-                    Toast.makeText(context,"User already added", Toast.LENGTH_SHORT).show()
-                }else{
-                    Toast.makeText(context,"user Added", Toast.LENGTH_SHORT).show()
-                    listOfUsers.clear()
+fun handleUserAdded(
+    user: User,
+    context: Context,
+    parkingAreaId: Int,
+    listOfUsers: SnapshotStateList<UserData>
+) {
 
-                    // Repopulate the list with the new data from the response
-                    response.body()?.data?.users?.let {
-                        listOfUsers.addAll(it)
+    val userExists = listOfUsers.any { userData ->
+        userData.userId == user.id
+    }
+    if (!userExists) {
+        val listOfUserIds = mutableListOf<Int>()
+        listOfUserIds.add(user.id!!)
+        val api = RetrofitService.getRetrofit().create(ParkingSlotApi::class.java)
+        api.addUsersToParkingArea(parkingAreaId, listOfUserIds)
+            .enqueue(object : Callback<ParkingAreaResponse> {
+                override fun onResponse(
+                    call: Call<ParkingAreaResponse>,
+                    response: Response<ParkingAreaResponse>
+                ) {
+                    if (response.body() != null && response.body()?.status == 0) {
+                        Toast.makeText(context, "user Added", Toast.LENGTH_SHORT).show()
+                        listOfUsers.clear()
+                        // Repopulate the list with the new data from the response
+                        response.body()?.data?.users?.let {
+                            listOfUsers.addAll(it)
+                        }
+                    } else {
+                        Toast.makeText(
+                            context, "" + response.body()?.message, Toast.LENGTH_SHORT
+                        ).show()
                     }
                 }
-            } else {
-                Toast.makeText(
-                    context, "" + response.body()?.message, Toast.LENGTH_SHORT
-                ).show()
-            }
-        }
-        override fun onFailure(call: Call<ParkingAreaResponse>, t: Throwable) {
-            Toast.makeText(context, "Error: ${t.message}", Toast.LENGTH_SHORT).show()
-        }
-    })
+
+                override fun onFailure(call: Call<ParkingAreaResponse>, t: Throwable) {
+                    Toast.makeText(context, "Error: ${t.message}", Toast.LENGTH_SHORT).show()
+                }
+            })
+    } else {
+        Toast.makeText(context, "User Already Added", Toast.LENGTH_SHORT).show()
+    }
+
+
 }
 
 
-fun removeUserFromParkingArea(context: Context, listOfUsers: SnapshotStateList<UserData>, index: Int,parkingAreaId:Int){
+fun removeUserFromParkingArea(
+    context: Context,
+    listOfUsers: SnapshotStateList<UserData>,
+    index: Int,
+    parkingAreaId: Int
+) {
     val api = RetrofitService.getRetrofit().create(ParkingSlotApi::class.java)
-    api.removeUserFromParkingArea(parkingAreaId,listOfUsers.get(index).userId).enqueue(object :Callback<ParkingAreaResponse>{
-        override fun onResponse(
-            call: Call<ParkingAreaResponse?>,
-            response: Response<ParkingAreaResponse?>
-        ) {
-            if(response.body()?.status==0){
-                Toast.makeText(context, "user removed", Toast.LENGTH_SHORT).show()
-                listOfUsers.removeAt(index)
+    api.removeUserFromParkingArea(parkingAreaId, listOfUsers.get(index).userId)
+        .enqueue(object : Callback<ParkingAreaResponse> {
+            override fun onResponse(
+                call: Call<ParkingAreaResponse?>,
+                response: Response<ParkingAreaResponse?>
+            ) {
+                if (response.body()?.status == 0) {
+                    Toast.makeText(context, "user removed", Toast.LENGTH_SHORT).show()
+                    listOfUsers.removeAt(index)
+                }
             }
-        }
 
-        override fun onFailure(
-            call: Call<ParkingAreaResponse?>,
-            t: Throwable
-        ) {
-            TODO("Not yet implemented")
-        }
+            override fun onFailure(
+                call: Call<ParkingAreaResponse?>,
+                t: Throwable
+            ) {
+                TODO("Not yet implemented")
+            }
 
-    })
+        })
 
 }
 
