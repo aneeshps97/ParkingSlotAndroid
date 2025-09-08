@@ -60,7 +60,7 @@ fun AddUsersToParkingArea(
     val listOfUsers = remember { mutableStateListOf<User>() }
     val context = LocalContext.current
     val showConfirmationDialog = remember { mutableStateOf(false) }
-    val user = remember { mutableStateOf<User?>(null) }
+    val user = remember { mutableStateOf<User>(User.EMPTY) }
     var userRepository = UserRepository()
     ConfirmPopUp(
         text1 = user.value?.name ?: "",
@@ -68,9 +68,19 @@ fun AddUsersToParkingArea(
         showDialog = showConfirmationDialog.value,
         onDismiss = { showConfirmationDialog.value = false },
         onConfirm = {
-            user.value?.let {
-                listOfUsers.add(it)
+            if(!listOfUsers.contains(user.value)){
+                if(user.value.id == Integer.parseInt(adminId.toString())){
+                    Toast.makeText(context,"Admin added by default", Toast.LENGTH_SHORT).show();
+                }else{
+                    user.value?.let {
+                        listOfUsers.add(it)
+                    }
+                }
+            }else{
+                Toast.makeText(context,"User already added", Toast.LENGTH_SHORT).show();
+                showConfirmationDialog.value = false;
             }
+
             showConfirmationDialog.value = false
         }
     )
@@ -193,7 +203,7 @@ fun handleFindingUserByEmail(
     email: String,
     listOfUsers: MutableList<User>,
     showConfirmationDialog: MutableState<Boolean>,
-    userState: MutableState<User?>,
+    userState: MutableState<User>,
     repository: UserRepository
 ) {
     repository.findUserByEmail(email) { result ->
@@ -216,4 +226,6 @@ fun handleFindingUserByEmail(
         }
     }
 }
+
+
 

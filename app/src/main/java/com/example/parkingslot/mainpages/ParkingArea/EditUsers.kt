@@ -62,16 +62,9 @@ fun EditUsers(
     val showRemoveUser = remember { mutableStateOf(false) }
     val showAddUser = remember { mutableStateOf(false) }
 
-    val userToRemove = remember { mutableStateOf(UserData(
-        0, "",
-         "",
-        "",
-         "",
-         emptyList()
-    )) }
+    val userToRemove = remember { mutableStateOf(UserData.EMPTY)}
     val context: Context = LocalContext.current
     val indexToRemove = remember { mutableStateOf(-1) }
-    val indexToUpdate = remember { mutableStateOf(-1) }
 
     ConfirmPopUp(
         showDialog = showRemoveUser.value,
@@ -218,12 +211,17 @@ fun handleUserAdded(user: User, context: Context, parkingAreaId:Int,listOfUsers:
             response: Response<ParkingAreaResponse>
         ) {
             if (response.body() != null && response.body()?.status == 0) {
-                Toast.makeText(context,"user Added", Toast.LENGTH_SHORT).show()
-                listOfUsers.clear()
+                val user = response.body()?.data?.users?.get(0)
+                if(listOfUsers.contains(user)){
+                    Toast.makeText(context,"User already added", Toast.LENGTH_SHORT).show()
+                }else{
+                    Toast.makeText(context,"user Added", Toast.LENGTH_SHORT).show()
+                    listOfUsers.clear()
 
-                // Repopulate the list with the new data from the response
-                response.body()?.data?.users?.let {
-                    listOfUsers.addAll(it)
+                    // Repopulate the list with the new data from the response
+                    response.body()?.data?.users?.let {
+                        listOfUsers.addAll(it)
+                    }
                 }
             } else {
                 Toast.makeText(
