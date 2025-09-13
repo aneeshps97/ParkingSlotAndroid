@@ -1,5 +1,6 @@
 package com.example.parkingslot.webConnect.repository
 
+import com.example.parkingslot.webConnect.dto.booking.AutoAssignRequest
 import com.example.parkingslot.webConnect.dto.booking.BookingData
 import com.example.parkingslot.webConnect.dto.booking.BookingResponse
 import com.example.parkingslot.webConnect.retrofit.ParkingSlotApi
@@ -37,6 +38,11 @@ class BookingRepository {
                     callback(Result.failure(t))
                 }
             })
+    }
+
+    fun autoAssignSlots(autoAssignRequest: AutoAssignRequest){
+        val api = RetrofitService.getRetrofit().create(ParkingSlotApi::class.java)
+
     }
 
 

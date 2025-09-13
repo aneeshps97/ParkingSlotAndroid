@@ -1,13 +1,12 @@
 package com.example.parkingslot.mainpages.ParkingArea
 
 import android.content.Context
-import android.net.Uri
+import android.util.Log
 import android.widget.Toast
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -20,9 +19,11 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -36,19 +37,19 @@ import com.example.parkingslot.Route.Routes
 import com.example.parkingslot.customresuables.confirm.ConfirmPopUp
 import com.example.parkingslot.customresuables.labels.LabelWithTrailingIcon
 import com.example.parkingslot.customresuables.popUp.AddUserPopUp
+import com.example.parkingslot.customresuables.popUp.TransferAdminPopUP
 import com.example.parkingslot.mainpages.background.PageBackground
 import com.example.parkingslot.webConnect.dto.parkingArea.ParkingAreaData
 import com.example.parkingslot.webConnect.dto.parkingArea.ParkingAreaResponse
-import com.example.parkingslot.webConnect.dto.slot.SlotData
 import com.example.parkingslot.webConnect.dto.user.User
 import com.example.parkingslot.webConnect.dto.user.UserData
-import com.example.parkingslot.webConnect.dto.user.UserResponse
+import com.example.parkingslot.webConnect.repository.ParkingAreaRepository
 import com.example.parkingslot.webConnect.retrofit.ParkingSlotApi
 import com.example.parkingslot.webConnect.retrofit.RetrofitService
-import com.google.gson.Gson
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
+import com.example.parkingslot.webConnect.repository.ParkingAreaRepository.*
 
 @Composable
 fun EditUsers(
@@ -65,6 +66,40 @@ fun EditUsers(
     val userToRemove = remember { mutableStateOf(UserData.EMPTY) }
     val context: Context = LocalContext.current
     val indexToRemove = remember { mutableStateOf(-1) }
+    val indexToTransfer = remember { mutableStateOf(-1) }
+    var showTransferDialog by remember { mutableStateOf(value = false) }
+    var selectedUserIdForTransfer by remember { mutableStateOf(value = 0) }
+    var showConfirmationDialogForTransferingSlot by remember { mutableStateOf(false) }
+    val parkingAreaRespository: ParkingAreaRepository = ParkingAreaRepository();
+
+    TransferAdminPopUP(
+        showDialog = showTransferDialog,
+        onDismiss = { showTransferDialog = false },
+        navController = navController,
+        userList = listOfUsers,
+        onUserSelected = { selectedUserId ->
+            selectedUserIdForTransfer = selectedUserId
+            showConfirmationDialogForTransferingSlot = true
+        }
+    )
+
+    ConfirmPopUp(
+        showDialog = showConfirmationDialogForTransferingSlot,
+        onDismiss = { showConfirmationDialogForTransferingSlot = false },
+        onConfirm = {
+            showRemoveUser.value = false;
+            Toast.makeText(context, "" + selectedUserIdForTransfer, Toast.LENGTH_SHORT).show()
+            transferAdmin(
+                selectedUserIdForNewAdmin = selectedUserIdForTransfer,
+                parkingAreaId = parkingAreaData.parkingAreaId,
+                parkingAreaRespository,
+                context = context,
+                navController = navController
+            )
+        },
+        "Make him Admin",
+        "Are you sure?"
+    )
 
     ConfirmPopUp(
         showDialog = showRemoveUser.value,
@@ -76,7 +111,8 @@ fun EditUsers(
                     context,
                     listOfUsers,
                     indexToRemove.value,
-                    parkingAreaData.parkingAreaId
+                    parkingAreaData.parkingAreaId,
+                    parkingAreaRespository
                 )
             }
         },
@@ -94,7 +130,7 @@ fun EditUsers(
                     user,
                     context,
                     parkingAreaData.parkingAreaId,
-                    listOfUsers
+                    listOfUsers, parkingAreaRespository
                 )
             }
         )
@@ -117,9 +153,11 @@ fun EditUsers(
             ScrollableBoxContentForEditUsers(
                 listOfUsers,
                 onRemove = { index ->
-                    showRemoveUser.value = true
                     userToRemove.value = listOfUsers.get(index)
                     indexToRemove.value = index
+                    showRemoveUser.value =
+                        checkIfAdmin(index, listOfUsers, parkingAreaData, context)
+                    showTransferDialog = !showRemoveUser.value
                 },
                 modifier = Modifier
                     .weight(1f)
@@ -181,6 +219,43 @@ fun EditUsers(
     }
 }
 
+fun transferAdmin(
+    selectedUserIdForNewAdmin: Int,
+    parkingAreaId: Int,
+    parkingAreaRespository: ParkingAreaRepository,
+    context: Context,
+    navController: NavController
+) {
+    parkingAreaRespository.changeAdmin(
+        context = context,
+        parkingAreaId = parkingAreaId,
+        newAdminId = selectedUserIdForNewAdmin,
+        onSuccess = {
+            navController.navigate(Routes.viewYourParkingAreas)
+        },
+        onError = { errorMessage ->
+            Log.e("RemoveUser", errorMessage)
+        }
+    )
+
+
+}
+
+fun checkIfAdmin(
+    index: Int,
+    listOfUsers: SnapshotStateList<UserData>,
+    parkingAreaData: ParkingAreaData,
+    context: Context
+): Boolean {
+    if (listOfUsers.get(index).userId == parkingAreaData.adminId) {
+        Toast.makeText(
+            context, "" + "Admin can't be removed", Toast.LENGTH_SHORT
+        ).show()
+        return false
+    }
+    return true
+}
+
 @Composable
 fun ScrollableBoxContentForEditUsers(
     listofData: List<UserData>,
@@ -214,7 +289,8 @@ fun handleUserAdded(
     user: User,
     context: Context,
     parkingAreaId: Int,
-    listOfUsers: SnapshotStateList<UserData>
+    listOfUsers: SnapshotStateList<UserData>,
+    parkingAreaRespository: ParkingAreaRepository
 ) {
 
     val userExists = listOfUsers.any { userData ->
@@ -223,31 +299,20 @@ fun handleUserAdded(
     if (!userExists) {
         val listOfUserIds = mutableListOf<Int>()
         listOfUserIds.add(user.id!!)
-        val api = RetrofitService.getRetrofit().create(ParkingSlotApi::class.java)
-        api.addUsersToParkingArea(parkingAreaId, listOfUserIds)
-            .enqueue(object : Callback<ParkingAreaResponse> {
-                override fun onResponse(
-                    call: Call<ParkingAreaResponse>,
-                    response: Response<ParkingAreaResponse>
-                ) {
-                    if (response.body() != null && response.body()?.status == 0) {
-                        Toast.makeText(context, "user Added", Toast.LENGTH_SHORT).show()
-                        listOfUsers.clear()
-                        // Repopulate the list with the new data from the response
-                        response.body()?.data?.users?.let {
-                            listOfUsers.addAll(it)
-                        }
-                    } else {
-                        Toast.makeText(
-                            context, "" + response.body()?.message, Toast.LENGTH_SHORT
-                        ).show()
-                    }
-                }
+        parkingAreaRespository.addUserToParkingArea(
+            context = context,
+            parkingAreaId = parkingAreaId,
+            userId = user.id!!,
+            onSuccess = { updatedUsers ->
+                listOfUsers.clear()
+                listOfUsers.addAll(updatedUsers)
+            },
+            onError = { errorMessage ->
+                Log.e("AddUser", errorMessage)
+            }
+        )
 
-                override fun onFailure(call: Call<ParkingAreaResponse>, t: Throwable) {
-                    Toast.makeText(context, "Error: ${t.message}", Toast.LENGTH_SHORT).show()
-                }
-            })
+
     } else {
         Toast.makeText(context, "User Already Added", Toast.LENGTH_SHORT).show()
     }
@@ -260,29 +325,22 @@ fun removeUserFromParkingArea(
     context: Context,
     listOfUsers: SnapshotStateList<UserData>,
     index: Int,
-    parkingAreaId: Int
+    parkingAreaId: Int,
+    parkingAreaRespository: ParkingAreaRepository
 ) {
-    val api = RetrofitService.getRetrofit().create(ParkingSlotApi::class.java)
-    api.removeUserFromParkingArea(parkingAreaId, listOfUsers.get(index).userId)
-        .enqueue(object : Callback<ParkingAreaResponse> {
-            override fun onResponse(
-                call: Call<ParkingAreaResponse?>,
-                response: Response<ParkingAreaResponse?>
-            ) {
-                if (response.body()?.status == 0) {
-                    Toast.makeText(context, "user removed", Toast.LENGTH_SHORT).show()
-                    listOfUsers.removeAt(index)
-                }
-            }
 
-            override fun onFailure(
-                call: Call<ParkingAreaResponse?>,
-                t: Throwable
-            ) {
-                TODO("Not yet implemented")
-            }
+    parkingAreaRespository.removeUserFromParkingArea(
+        context = context,
+        parkingAreaId = parkingAreaId,
+        userId = listOfUsers[index].userId,
+        onSuccess = {
+            listOfUsers.removeAt(index)
+        },
+        onError = { errorMessage ->
+            Log.e("RemoveUser", errorMessage)
+        }
+    )
 
-        })
 
 }
 
