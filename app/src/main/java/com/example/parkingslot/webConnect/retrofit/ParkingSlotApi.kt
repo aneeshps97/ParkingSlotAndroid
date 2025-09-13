@@ -1,5 +1,6 @@
 package com.example.parkingslot.webConnect.retrofit
 
+import com.example.parkingslot.webConnect.dto.booking.AutoAssignRequest
 import com.example.parkingslot.webConnect.dto.booking.BookingRequest
 import com.example.parkingslot.webConnect.dto.booking.BookingResponse
 import com.example.parkingslot.webConnect.dto.login.LoginRequest
@@ -74,6 +75,9 @@ interface ParkingSlotApi {
     @POST(value = "parkingslot/booking/assignSlotsToUser")
     fun assignSlotsToUser(@Body request: BookingRequest): Call<BookingResponse>
 
+    @POST(value = "parkingslot/booking/autoAssignSlotsToUser")
+    fun autoAssignSlots(@Body request: AutoAssignRequest):Call<BookingResponse>
+
     @DELETE("parkingslot/slot/deleteSlot/{slotId}")
     fun deleteSlot(
         @Path("slotId") slotId: Int,
@@ -132,6 +136,12 @@ interface ParkingSlotApi {
     fun removeUserFromParkingArea(
         @Path("parkingAreaId") parkingAreaId: Int,
         @Query("userId") userId: Int
+    ): Call<ParkingAreaResponse>
+
+    @PUT("parkingslot/parkingArea/changeAdmin/{parkingAreaId}")
+    fun changeAdmin(
+        @Path("parkingAreaId") parkingAreaId: Int,
+        @Query("newAdminId") newAdminId: Int
     ): Call<ParkingAreaResponse>
 
     @DELETE("parkingslot/parkingArea/deleteParkingArea/{parkingAreaId}")

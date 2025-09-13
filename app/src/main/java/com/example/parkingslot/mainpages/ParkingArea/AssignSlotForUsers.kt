@@ -4,6 +4,7 @@ package com.example.parkingslot.mainpages.ParkingArea
 import android.annotation.SuppressLint
 import android.app.DatePickerDialog
 import android.content.Context
+import android.net.Uri
 import android.widget.Toast
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.animateFloat
@@ -42,6 +43,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.autoSaver
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -60,6 +62,7 @@ import com.example.parkingslot.webConnect.dto.slot.SlotData
 import com.example.parkingslot.webConnect.dto.user.UserData
 import com.example.parkingslot.webConnect.retrofit.ParkingSlotApi
 import com.example.parkingslot.webConnect.retrofit.RetrofitService
+import com.google.gson.Gson
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 
@@ -164,6 +167,9 @@ fun AssignSlotForUsers(
 
 
                 })
+
+                val json = Uri.encode(Gson().toJson(parkingAreaData))
+                AutoAssignSlots({navController.navigate(Routes.autoAssignSlots+"/$json")})
 
                 FinishButton({
                     navController.navigate(Routes.viewYourParkingAreas)
@@ -423,6 +429,28 @@ fun BookButton(onClick: () -> Unit) {
             text = "Book",
             fontSize = 30.sp,
             color = Color.White
+        )
+    }
+}
+
+@Composable
+fun AutoAssignSlots(onClick: () -> Unit) {
+    OutlinedButton(
+        onClick = onClick,
+        colors = ButtonDefaults.outlinedButtonColors(
+            containerColor = Color.LightGray,
+            contentColor = Color.White
+        ),
+        shape = RoundedCornerShape(4.dp),
+        border = BorderStroke(1.dp, Color.Black),
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(16.dp)
+    ) {
+        Text(
+            text = "Smart Book",
+            fontSize = 30.sp,
+            color = Color.Black
         )
     }
 }

@@ -5,12 +5,17 @@ object Routes {
     var availableSlots = "availableSlots"
     var parkingTicket = "ParkingTicket"
     var myBookings = "myBookings"
-    var releaseSlot = "releaseSlot"
-    var transferSlot = "TransferSloat"
+
     var login = "Login"
     var signup= "SignUp"
 
+
+    @Deprecated(
+        message = "No longer used. Use viewYourParkingAreas instead.",
+        replaceWith = ReplaceWith("viewYourParkingAreas")
+    )
     var homePage = "HomePage"
+
 
     var createParkingArea = "CreateParkingArea"
 
@@ -19,6 +24,8 @@ object Routes {
     var addUsersToParkingArea = "AddUsersToParkingArea"
 
     var assignSlotForUsers = "AssignSlotForUsers"
+
+    var autoAssignSlots = "AutoAssignSlots"
 
     var viewYourParkingAreas = "ViewYourParkingAreas"
 
@@ -29,4 +36,5 @@ object Routes {
     var editUsers = "EditUsers"
 
     var editBooking ="EditBooking"
+
 }

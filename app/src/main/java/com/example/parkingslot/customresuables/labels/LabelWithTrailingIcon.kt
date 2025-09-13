@@ -1,6 +1,7 @@
 package com.example.parkingslot.customresuables.labels
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -34,6 +35,11 @@ fun LabelWithTrailingIcon(
             // Removed .fillMaxWidth() to allow the Row to be centered by its parent
             .padding(end = 8.dp)
             .background(Color(0xFFF0F0F0), shape = RoundedCornerShape(8.dp))
+            .border(
+                width = 1.dp,
+                color = Color.Gray,
+                shape = RoundedCornerShape(8.dp)
+            )
             .padding(horizontal = 12.dp, vertical = 8.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
