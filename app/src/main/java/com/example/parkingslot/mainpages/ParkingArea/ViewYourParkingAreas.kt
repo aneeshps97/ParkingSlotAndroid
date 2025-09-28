@@ -154,57 +154,57 @@ fun ViewYourParkingAreas(
                             )
                         }
                     }
-
-
                 }
 
             }
-
-
-            // Center Box with scrollable list
-            Box(
-                modifier = Modifier
-                    .align(Alignment.Center)
-                    .fillMaxWidth()
-                    .fillMaxHeight(0.8f)
-                    .padding(16.dp)
-            ) {
+            if(parkingAreas.size>0){
+                // Center Box with scrollable list
                 Box(
                     modifier = Modifier
-                        .shadow(
-                            elevation = 8.dp, // Adjust this value to change the shadow depth
-                            shape = RoundedCornerShape(16.dp)
-                        )
-                        .background(Color.White, shape = RoundedCornerShape(16.dp))
+                        .align(Alignment.Center)
                         .fillMaxWidth()
-                        .padding(
-                            horizontal = 16.dp,
-                            vertical = 24.dp
-                        ).align(Alignment.Center)
+                        .fillMaxHeight(0.8f)
+                        .padding(16.dp)
                 ) {
-
-                    LazyColumn(
-                        verticalArrangement = Arrangement.spacedBy(8.dp),
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        items(parkingAreas) { parkingArea ->
-                            ParkingAreas(
-                                pakringAreaName = parkingArea.name ?: "Unnamed Area",
-                                onClick = {
-                                    navController.navigate(Routes.parkingArea + "/" + parkingArea.parkingAreaId + "/" + parkingArea.name + "/" + parkingArea.adminId + "/" + parkingArea.ticketLine1 + "/" + parkingArea.ticketLine2)
-                                },
-                                onEditClick = {
-                                    navController.navigate(Routes.editParkingArea + "/" + parkingArea.parkingAreaId + "/" + parkingArea.name + "/" + parkingArea.adminId + "/" + parkingArea.ticketLine1 + "/" + parkingArea.ticketLine2)
-                                }
+                    Box(
+                        modifier = Modifier
+                            .shadow(
+                                elevation = 8.dp, // Adjust this value to change the shadow depth
+                                shape = RoundedCornerShape(16.dp)
                             )
+                            .background(Color.White, shape = RoundedCornerShape(16.dp))
+                            .fillMaxWidth()
+                            .padding(
+                                horizontal = 16.dp,
+                                vertical = 24.dp
+                            ).align(Alignment.Center)
+                    ) {
+
+                        LazyColumn(
+                            verticalArrangement = Arrangement.spacedBy(8.dp),
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            items(parkingAreas) { parkingArea ->
+                                ParkingAreas(
+                                    pakringAreaName = parkingArea.name ?: "Unnamed Area",
+                                    onClick = {
+                                        navController.navigate(Routes.parkingArea + "/" + parkingArea.parkingAreaId + "/" + parkingArea.name + "/" + parkingArea.adminId + "/" + parkingArea.ticketLine1 + "/" + parkingArea.ticketLine2)
+                                    },
+                                    onEditClick = {
+                                        navController.navigate(Routes.editParkingArea + "/" + parkingArea.parkingAreaId + "/" + parkingArea.name + "/" + parkingArea.adminId + "/" + parkingArea.ticketLine1 + "/" + parkingArea.ticketLine2)
+                                    }
+                                )
+                            }
                         }
+
                     }
+
 
                 }
 
-
             }
+
         }
     }
 }
