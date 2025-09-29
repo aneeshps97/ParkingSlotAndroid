@@ -23,9 +23,9 @@ import com.example.parkingslot.mainpages.ParkingArea.parkingArea
 import com.example.parkingslot.mainpages.availableslot.AvailableSlot
 import com.example.parkingslot.mainpages.home.HomePage
 import com.example.parkingslot.mainpages.parkingTicket.ParkingTicket
+import com.example.parkingslot.mainpages.parkingTicket.ParkingTicketScanner
 import com.example.parkingslot.mainpages.userauth.Login
 import com.example.parkingslot.mainpages.userauth.SignUp
-import com.example.parkingslot.sharedView.BookingViewModel
 import com.example.parkingslot.webConnect.dto.booking.BookingData
 import com.example.parkingslot.webConnect.dto.parkingArea.ParkingAreaData
 import com.google.gson.Gson
@@ -38,7 +38,6 @@ fun MyAppNavigation() {
     val calendar = Calendar.getInstance()
     val year = calendar.get(Calendar.YEAR)
     val month = calendar.get(Calendar.MONTH) + 1
-    val bookingViewModel: BookingViewModel = viewModel()
     NavHost(
         navController = navController,
         startDestination = Routes.login, builder = {
@@ -163,11 +162,21 @@ fun MyAppNavigation() {
 
             //showing the current ticket
 
-            composable(Routes.parkingTicket + "/{parkingTicketNumber}/{ticketLine1}/{ticketLine2}") {
+            composable(Routes.parkingTicket + "/{parkingTicketNumber}/{ticketLine1}/{ticketLine2}/{issuedDate}/{parkingAreaName}/{userName}") {
                 val parkingTicketNumber = it.arguments?.getString("parkingTicketNumber")
                 val ticketLine1 = it.arguments?.getString("ticketLine1")
                 val ticketLine2 = it.arguments?.getString("ticketLine2")
-                ParkingTicket(parkingTicketNumber = parkingTicketNumber ?: "00000",ticketLine1=ticketLine1,ticketLine2=ticketLine2)
+                val issuedDate = it.arguments?.getString("issuedDate")
+                val parkingAreaName = it.arguments?.getString("parkingAreaName")
+                val userName = it.arguments?.getString("userName")
+                ParkingTicket(
+                    parkingTicketNumber = parkingTicketNumber ?: "00000",
+                    ticketLine1 = ticketLine1,
+                    ticketLine2 = ticketLine2,
+                    issuedDate,
+                    parkingAreaName,
+                    userName
+                )
             }
 
             //showing available slots
@@ -273,6 +282,10 @@ fun MyAppNavigation() {
                     ticketLine2 = ticketLine2
 
                 )
+            }
+
+            composable(Routes.parkingTicketScanner) {
+                ParkingTicketScanner()
             }
 
         }

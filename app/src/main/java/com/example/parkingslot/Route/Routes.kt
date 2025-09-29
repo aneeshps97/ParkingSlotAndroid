@@ -9,13 +9,11 @@ object Routes {
     var login = "Login"
     var signup= "SignUp"
 
-
     @Deprecated(
         message = "No longer used. Use viewYourParkingAreas instead.",
         replaceWith = ReplaceWith("viewYourParkingAreas")
     )
     var homePage = "HomePage"
-
 
     var createParkingArea = "CreateParkingArea"
 
@@ -36,5 +34,7 @@ object Routes {
     var editUsers = "EditUsers"
 
     var editBooking ="EditBooking"
+
+    var parkingTicketScanner = "ParkingTicketScanner"
 
 }
