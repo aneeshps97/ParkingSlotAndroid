@@ -74,7 +74,8 @@ fun parkingArea(
                 }
             )
             Box(
-                modifier = Modifier.fillMaxSize()
+                modifier = Modifier
+                    .fillMaxSize()
                     .padding(20.dp),
                 contentAlignment = Alignment.TopCenter
             ) {
@@ -285,11 +286,13 @@ fun handleBookingCheckForToday(
 
     repository.getBookingByUserParkingAndDate(userId, parkingAreaId, today) { result ->
         result.onSuccess { response ->
-              val slotName = response.data?.firstOrNull()?.slot?.name
+            val slotName = response.data?.firstOrNull()?.slot?.name
             val ticketLine1 = response.data?.firstOrNull()?.parkingArea?.ticketLine1
             val ticketLine2 = response.data?.firstOrNull()?.parkingArea?.ticketLine2
+            val parkingAreaName = response.data?.firstOrNull()?.parkingArea?.name
+            val userName = response.data?.firstOrNull()?.user?.name
             if (slotName != null) {
-                navController.navigate("${Routes.parkingTicket}/$slotName/$ticketLine1/$ticketLine2")
+                navController.navigate("${Routes.parkingTicket}/$slotName/$ticketLine1/$ticketLine2/$today/$parkingAreaName/$userName")
             } else {
                 Toast.makeText(context, "No Booking for today", Toast.LENGTH_SHORT).show()
             }

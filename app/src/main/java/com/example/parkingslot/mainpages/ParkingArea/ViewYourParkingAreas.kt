@@ -11,6 +11,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.AddAPhoto
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.ExitToApp
@@ -134,6 +135,20 @@ fun ViewYourParkingAreas(
                                     Icon(
                                         imageVector = Icons.Default.Add,
                                         contentDescription = "Create new",
+                                    )
+                                }
+                            )
+                            //second item
+                            DropdownMenuItem(
+                                text = { Text("Scan Ticket") },
+                                onClick = {
+                                    navController.navigate(Routes.parkingTicketScanner)
+                                    expanded = false // Hide the menu after the click
+                                },
+                                trailingIcon = {
+                                    Icon(
+                                        imageVector = Icons.Default.AddAPhoto,
+                                        contentDescription = "scan ticket",
                                     )
                                 }
                             )

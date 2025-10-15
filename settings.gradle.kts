@@ -9,6 +9,8 @@ pluginManagement {
         }
         mavenCentral()
         gradlePluginPortal()
+        // Add this line
+        maven("https://jitpack.io")
     }
 }
 dependencyResolutionManagement {
@@ -16,9 +18,10 @@ dependencyResolutionManagement {
     repositories {
         google()
         mavenCentral()
+        // This is already correct
+        maven("https://jitpack.io")
     }
 }
 
 rootProject.name = "Parkingslot"
 include(":app")
- 
