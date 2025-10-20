@@ -86,7 +86,6 @@ fun AssignSlotForUsers(
 
 
     PageBackground {
-
         Box(modifier = Modifier.fillMaxSize()) {
             Column(
                 modifier = Modifier
@@ -94,12 +93,12 @@ fun AssignSlotForUsers(
                     .align(Alignment.TopCenter),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                Spacer(modifier = Modifier.height(30.dp))
+                Spacer(modifier = Modifier.height(15.dp))
                 Text(
                     parkingAreaData.name.toUpperCase(),
                     style = MaterialTheme.typography.headlineMedium
                 )
-                Spacer(modifier = Modifier.height(30.dp))
+                Spacer(modifier = Modifier.height(15.dp))
 
                 Text(
                     text = "BOOK SLOTS",
