@@ -86,6 +86,7 @@ fun myBookings(
             userList = userList,
             onUserSelected = {selectedUserId ->
                 selectedUserIdForTransfer=selectedUserId
+                showTransferDialog = false
                 showConfirmationDialogForTransferingSlot=true
             }
         )
@@ -102,6 +103,13 @@ fun myBookings(
                     context = context,
                     onTransferCompleted = {
                         showConfirmationDialogForTransferingSlot = false
+                        handleGetCurrentBookingOfUser(
+                            userId = userId,
+                            parkingAreaId = parkingAreaId?.toInt() ?: 0,
+                            navController = navController,
+                            context = context,
+                            repository = BookingRepository()
+                        )
                     },
                     repository = parkingAreaRepository
                 )
@@ -174,7 +182,7 @@ fun handleSlotTransfer(
     repository.bookSlotForUser(selectedUserIdForTransfer, matchedId) { result ->
         result.onSuccess {
             Toast.makeText(context, "Slot reallocated", Toast.LENGTH_SHORT).show()
-            onTransferCompleted() // e.g., hide dialog
+            onTransferCompleted()
         }
         result.onFailure { error ->
             Toast.makeText(
