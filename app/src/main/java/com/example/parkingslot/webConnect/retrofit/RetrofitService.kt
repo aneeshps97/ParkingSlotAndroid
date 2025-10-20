@@ -6,7 +6,7 @@ import retrofit2.converter.gson.GsonConverterFactory
 object RetrofitService {
     //  https://parkingslot-p94v.onrender.com/
     private val retrofit: Retrofit = Retrofit.Builder()
-        .baseUrl("http://192.168.30.2:8080/")
+        .baseUrl("http://192.168.30.3:8080/")
         .addConverterFactory(GsonConverterFactory.create())
         .build()
 
