@@ -94,6 +94,7 @@ fun AssignSlotForUsers(
                     .align(Alignment.TopCenter),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
+                Spacer(modifier = Modifier.height(30.dp))
                 Text(
                     parkingAreaData.name.toUpperCase(),
                     style = MaterialTheme.typography.headlineMedium
@@ -131,7 +132,7 @@ fun AssignSlotForUsers(
                     onSlotSelected = { selectedSlot = it }
                 )
 
-                BookButton({
+                BookButton(isenabled = true, onClick = {
                     val api = RetrofitService.getRetrofit().create(ParkingSlotApi::class.java)
                     val bookingRequest = BookingRequest(
                         slotId = selectedSlot?.slotId ?: 0,
@@ -413,8 +414,9 @@ fun MinimalistDatePicker(
 
 
 @Composable
-fun BookButton(onClick: () -> Unit) {
+fun BookButton(isenabled: Boolean = true, onClick: () -> Unit) {
     Button(
+        enabled = isenabled,
         onClick = onClick,
         colors = ButtonDefaults.buttonColors(
             containerColor = Color.Black,
@@ -456,8 +458,9 @@ fun AutoAssignSlots(onClick: () -> Unit) {
 }
 
 @Composable
-fun FinishButton(onClick: () -> Unit) {
+fun FinishButton(onClick: () -> Unit,enabled: Boolean=true) {
     OutlinedButton(
+        enabled=enabled,
         onClick = onClick,
         colors = ButtonDefaults.outlinedButtonColors(
             contentColor = Color.Black

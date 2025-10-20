@@ -3,7 +3,6 @@ package com.example.parkingslot.mainpages.ParkingArea
 import android.content.Context
 import android.net.Uri
 import android.widget.Toast
-import androidx.annotation.IntegerRes
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -18,11 +17,10 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Card
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -32,26 +30,15 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
-import androidx.navigation.compose.rememberNavController
 import com.example.parkingslot.Route.Routes
 import com.example.parkingslot.customresuables.confirm.ConfirmPopUp
-import com.example.parkingslot.customresuables.labels.LabelWithTrailingIcon
-import com.example.parkingslot.customresuables.popUp.AddParkingSlotPopUp
-import com.example.parkingslot.customresuables.popUp.UpdateSlotDataPopUp
 import com.example.parkingslot.mainpages.background.PageBackground
 import com.example.parkingslot.webConnect.dto.booking.BookingData
 import com.example.parkingslot.webConnect.dto.booking.BookingResponse
-import com.example.parkingslot.webConnect.dto.parkingArea.ParkingAreaData
-import com.example.parkingslot.webConnect.dto.parkingArea.ParkingAreaResponse
-import com.example.parkingslot.webConnect.dto.slot.Slot
 import com.example.parkingslot.webConnect.dto.slot.SlotData
-import com.example.parkingslot.webConnect.dto.slot.SlotDataResponse
-import com.example.parkingslot.webConnect.dto.user.User
-import com.example.parkingslot.webConnect.dto.user.UserData
 import com.example.parkingslot.webConnect.repository.ParkingAreaRepository
 import com.example.parkingslot.webConnect.retrofit.ParkingSlotApi
 import com.example.parkingslot.webConnect.retrofit.RetrofitService
@@ -259,11 +246,38 @@ fun ScrollableBoxContentForEditBookings(
     ) {
         Column {
             listofData.forEachIndexed { index, data ->
-                LabelWithTrailingIcon(
-                    "${data.date}\n${data.slot?.name} \n${data.user?.name}",
-                    { onRemove(index) }
+                BookingCard(
+                    date = data.date,
+                    slot = data.slot?.name,
+                    user =data.user?.name,
+                    onDelete = { onRemove(index) }
                 )
                 Spacer(modifier = Modifier.height(8.dp))
+            }
+        }
+    }
+}
+
+@Composable
+fun BookingCard(date: String, slot: String?, user: String?, onDelete: () -> Unit) {
+    Card(
+        modifier = Modifier
+            .padding(16.dp)
+            .fillMaxWidth(),
+        shape = RoundedCornerShape(12.dp)
+    ) {
+        Column(modifier = Modifier.padding(16.dp)) {
+            Text("📅 Date: $date", style = MaterialTheme.typography.bodyMedium)
+            Spacer(modifier = Modifier.height(8.dp))
+            Text("🕒 Slot: $slot", style = MaterialTheme.typography.bodyMedium)
+            Spacer(modifier = Modifier.height(8.dp))
+            Text("👤 User: $user", style = MaterialTheme.typography.bodyMedium)
+            Spacer(modifier = Modifier.height(16.dp))
+            Button(
+                onClick = onDelete,
+                colors = ButtonDefaults.buttonColors(Color.DarkGray)
+            ) {
+                Text("❌ Delete Booking", color = Color.White)
             }
         }
     }
