@@ -112,11 +112,6 @@ fun AutoAssignSlots(
             ) {
                 Spacer(modifier = Modifier.height(30.dp))
                 Text(
-                    parkingAreaData.name.toUpperCase(),
-                    style = MaterialTheme.typography.headlineMedium
-                )
-                Spacer(modifier = Modifier.height(30.dp))
-                Text(
                     text = "AUTO ASSIGN",
                     style = MaterialTheme.typography.headlineMedium.copy(fontSize = 20.sp)
                 )
