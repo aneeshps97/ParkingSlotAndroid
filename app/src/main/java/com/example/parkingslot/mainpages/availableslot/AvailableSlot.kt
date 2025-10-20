@@ -52,6 +52,7 @@ fun AvailableSlot(
     val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
     val formattedDate = today.format(formatter)
     var dateSelected:String=formattedDate
+    var slotSelected:String=""
     val sharedPref = remember { context.getSharedPreferences("loginPref", Context.MODE_PRIVATE) }
     val userId = sharedPref.getInt("user_id",1)
     var parkingAreaRepository = ParkingAreaRepository()
@@ -62,6 +63,8 @@ fun AvailableSlot(
         ConfirmPopUp(
             showDialog = showConfirmationDialog,
             onDismiss = { showConfirmationDialog = false },
+            text1 = "Book slot",
+            text2 = "You want to book slot : $slotSelected ?",
             onConfirm = {
                 handleSlotBooking(
                     bookingData = bookingData,
@@ -90,6 +93,7 @@ fun AvailableSlot(
                 onClick = { selectedDate ->
                     dateSelected = selectedDate
                     showConfirmationDialog = true
+                    slotSelected=bookingData.find { it.date == dateSelected }?.slot?.name.toString()
                 },
                 calenderRef = Routes.availableSlots,
                 bookingData = bookingData,
